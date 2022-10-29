@@ -13,6 +13,17 @@ or
 Pixie.executeResource(<path_to_your_px_file_inside_resources>, CurrentClass.class)
 ``
 
+<details><summary>Available modules</summary>
+<p>
+
+```
+math
+files
+sockets
+```
+</p>
+</details>
+
 ### Syntex
 
 
