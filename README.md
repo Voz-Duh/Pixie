@@ -26,6 +26,43 @@ sockets
 
 ### Syntex
 
+<details><summary>Classes</summary>
+<p>
+
+  You can define class by ``class``
+  
+  Class example:
+  ```
+  class Test {
+      import math
+
+      field f_str = ''
+      field f_val = 0
+
+      function @init(f_str, f_val){
+      }
+
+      function @add(other) {
+          return(f_str + other)
+      }
+
+      function @inv() {
+          return(!f_val)
+      }
+
+      function test(string, test) {
+          return(string + test + dsin(f_val))
+      }
+  }
+  ```
+  
+  Classes uses ther own imports, you can see that in the example
+
+  For use class you need print their contructor ``init Test('Some text', 100)``
+
+  You also can define not classed instance by ``init(<var_name>: <var_value>)``
+</p>
+</details>
 
 <details><summary>Variables</summary>
 <p>
@@ -39,8 +76,6 @@ sockets
   Example: ``'Hello world!'``
 
   So, you cannot write ``'Hello, how are you?'`` that will break text just replace ``,`` to ``\.``
-
-  You also can define instance by ``init(<var_name>: <var_value>)`` and get from that by ``instance(<var_name>)``
 </p>
 </details>
 
@@ -62,11 +97,6 @@ sockets
     print(arg0 + arg1)
   end
   ```
-
-
-  You cannot write () inside () that break program
-
-  Example: ``print(sin(0.4) + 1)``
 </p>
 </details>
 
