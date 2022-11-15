@@ -1,5 +1,4 @@
 # Pixie
-Pixie - programming language written on java
 
 ## Pixie is lib
 You need java project for using Pixie
