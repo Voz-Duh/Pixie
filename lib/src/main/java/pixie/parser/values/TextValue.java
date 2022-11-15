@@ -1,5 +1,6 @@
 package pixie.parser.values;
 
+import pixie.parser.LineParser;
 import pixie.parser.Operable;
 import pixie.parser.SyntaxException;
 
@@ -11,80 +12,80 @@ public class TextValue implements Operable<String> {
      }
 
      @Override
-     public String get() {
+     public String get(LineParser parser) {
           return value;
      }
 
      @Override
-     public Operable add(Operable other) {
-          var getter = other.get();
+     public Operable add(Operable other, LineParser parser) {
+          var getter = other.get(parser);
           return new TextValue(value + getter);
      }
 
      @Override
-     public Operable sub(Operable other) throws SyntaxException {
+     public Operable sub(Operable other, LineParser parser) throws SyntaxException {
           throw new SyntaxException("Text value not support '-' operator");
      }
 
      @Override
-     public Operable mul(Operable other) throws SyntaxException {
+     public Operable mul(Operable other, LineParser parser) throws SyntaxException {
           throw new SyntaxException("Text value not support '*' operator");
      }
 
      @Override
-     public Operable div(Operable other) throws SyntaxException {
+     public Operable div(Operable other, LineParser parser) throws SyntaxException {
           throw new SyntaxException("Text value not support '/' operator");
      }
 
      @Override
-     public Operable pow(Operable other) throws SyntaxException {
+     public Operable pow(Operable other, LineParser parser) throws SyntaxException {
           throw new SyntaxException("Text value not support '**' operator");
      }
 
      @Override
-     public Operable and(Operable other) throws SyntaxException {
+     public Operable and(Operable other, LineParser parser) throws SyntaxException {
           throw new SyntaxException("Text value not support '&&' operator");
      }
 
      @Override
-     public Operable or(Operable other) throws SyntaxException {
+     public Operable or(Operable other, LineParser parser) throws SyntaxException {
           throw new SyntaxException("Text value not support '||' operator");
      }
 
      @Override
-     public BoolValue more(Operable other) throws SyntaxException {
+     public BoolValue more(Operable other, LineParser parser) throws SyntaxException {
           throw new SyntaxException("Text value not support '>' operator");
      }
 
      @Override
-     public BoolValue less(Operable other) throws SyntaxException {
+     public BoolValue less(Operable other, LineParser parser) throws SyntaxException {
           throw new SyntaxException("Text value not support '<' operator");
      }
 
      @Override
-     public BoolValue moreEqu(Operable other) throws SyntaxException {
+     public BoolValue moreEqu(Operable other, LineParser parser) throws SyntaxException {
           throw new SyntaxException("Text value not support '>=' operator");
      }
 
      @Override
-     public BoolValue lessEqu(Operable other) throws SyntaxException {
+     public BoolValue lessEqu(Operable other, LineParser parser) throws SyntaxException {
           throw new SyntaxException("Text value not support '<=' operator");
      }
 
      @Override
-     public BoolValue equals(Operable other) {
-          var getter = other.get();
-          return new BoolValue(value == getter);
+     public BoolValue equals(Operable other, LineParser parser) {
+          var getter = other.get(parser);
+          return new BoolValue(value.equals(getter));
      }
 
      @Override
-     public BoolValue notEquals(Operable other) {
-          var getter = other.get();
-          return new BoolValue(value != getter);
+     public BoolValue notEquals(Operable other, LineParser parser) {
+          var getter = other.get(parser);
+          return new BoolValue(!value.equals(getter));
      }
 
      @Override
-     public Operable inv() throws SyntaxException {
+     public Operable inv(LineParser parser) throws SyntaxException {
           throw new SyntaxException("Text value not support '!' operator");
      }
 }

@@ -25,18 +25,18 @@ public class PixieModule {
      }
 
      public static float parseNum(LineParser self, String value) throws SyntaxException {
-          return ((NumValue) self.parseValue("", value).value).get();
+          return ((NumValue) self.parseValue("", value).value).get(self);
      }
 
      public static boolean parseBool(LineParser self, String value) throws SyntaxException {
-          return ((BoolValue) self.parseValue("", value).value).get();
+          return ((BoolValue) self.parseValue("", value).value).get(self);
      }
 
      public static String parseText(LineParser self, String value) throws SyntaxException {
-          return ((TextValue) self.parseValue("", value).value).get();
+          return ((TextValue) self.parseValue("", value).value).get(self);
      }
 
      public static Map<String, Operable> parseInst(LineParser self, String value) throws SyntaxException {
-          return ((InstanceValue) self.parseValue("", value).value).get();
+          return ((InstanceValue) self.parseValue("", value).value).get(self);
      }
 }

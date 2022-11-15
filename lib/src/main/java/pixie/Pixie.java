@@ -27,6 +27,10 @@ public class Pixie {
      }
 
      public static void executeResource(String path, Class importer) throws SyntaxException, IOException {
-          execute(importer.getClassLoader().getResource("test.px").getPath());
+          execute(importer.getClassLoader().getResource(path).getPath());
+     }
+
+     public static void main(String[] args) throws SyntaxException, IOException {
+          execute("D:\\Projects\\Pixie\\test.px");
      }
 }

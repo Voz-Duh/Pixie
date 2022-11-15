@@ -1,6 +1,7 @@
 package pixie.parser.values;
 
 
+import pixie.parser.LineParser;
 import pixie.parser.Operable;
 import pixie.parser.SyntaxException;
 
@@ -12,13 +13,13 @@ public class NumValue implements Operable<Float> {
      }
 
      @Override
-     public Float get() {
+     public Float get(LineParser parser) {
           return value;
      }
 
      @Override
-     public Operable add(Operable other) throws SyntaxException {
-          var getter = other.get();
+     public Operable add(Operable other, LineParser parser) throws SyntaxException {
+          var getter = other.get(parser);
           if (getter instanceof Float)
                return new NumValue(value + (Float) getter);
           if (getter instanceof String)
@@ -28,8 +29,8 @@ public class NumValue implements Operable<Float> {
      }
 
      @Override
-     public Operable sub(Operable other) throws SyntaxException {
-          var getter = other.get();
+     public Operable sub(Operable other, LineParser parser) throws SyntaxException {
+          var getter = other.get(parser);
           if (getter instanceof Float)
                return new NumValue(value - (Float) getter);
 
@@ -37,8 +38,8 @@ public class NumValue implements Operable<Float> {
      }
 
      @Override
-     public Operable mul(Operable other) throws SyntaxException {
-          var getter = other.get();
+     public Operable mul(Operable other, LineParser parser) throws SyntaxException {
+          var getter = other.get(parser);
           if (getter instanceof Float)
                return new NumValue(value * (Float) getter);
 
@@ -46,8 +47,8 @@ public class NumValue implements Operable<Float> {
      }
 
      @Override
-     public Operable div(Operable other) throws SyntaxException {
-          var getter = other.get();
+     public Operable div(Operable other, LineParser parser) throws SyntaxException {
+          var getter = other.get(parser);
           if (getter instanceof Float)
                return new NumValue(value / (Float) getter);
 
@@ -55,8 +56,8 @@ public class NumValue implements Operable<Float> {
      }
 
      @Override
-     public Operable pow(Operable other) throws SyntaxException {
-          var getter = other.get();
+     public Operable pow(Operable other, LineParser parser) throws SyntaxException {
+          var getter = other.get(parser);
           if (getter instanceof Float)
                return new NumValue((float) Math.pow(value, (Float) getter));
 
@@ -64,18 +65,18 @@ public class NumValue implements Operable<Float> {
      }
 
      @Override
-     public Operable and(Operable other) throws SyntaxException {
+     public Operable and(Operable other, LineParser parser) throws SyntaxException {
           throw new SyntaxException("Number value not support '&&' operator");
      }
 
      @Override
-     public Operable or(Operable other) throws SyntaxException {
+     public Operable or(Operable other, LineParser parser) throws SyntaxException {
           throw new SyntaxException("Number value not support '||' operator");
      }
 
      @Override
-     public BoolValue more(Operable other) throws SyntaxException {
-          var getter = other.get();
+     public BoolValue more(Operable other, LineParser parser) throws SyntaxException {
+          var getter = other.get(parser);
           if (getter instanceof Float)
                return new BoolValue(value > (Float) getter);
 
@@ -83,8 +84,8 @@ public class NumValue implements Operable<Float> {
      }
 
      @Override
-     public BoolValue less(Operable other) throws SyntaxException {
-          var getter = other.get();
+     public BoolValue less(Operable other, LineParser parser) throws SyntaxException {
+          var getter = other.get(parser);
           if (getter instanceof Float)
                return new BoolValue(value < (Float) getter);
 
@@ -92,8 +93,8 @@ public class NumValue implements Operable<Float> {
      }
 
      @Override
-     public BoolValue moreEqu(Operable other) throws SyntaxException {
-          var getter = other.get();
+     public BoolValue moreEqu(Operable other, LineParser parser) throws SyntaxException {
+          var getter = other.get(parser);
           if (getter instanceof Float)
                return new BoolValue(value >= (Float) getter);
 
@@ -101,8 +102,8 @@ public class NumValue implements Operable<Float> {
      }
 
      @Override
-     public BoolValue lessEqu(Operable other) throws SyntaxException {
-          var getter = other.get();
+     public BoolValue lessEqu(Operable other, LineParser parser) throws SyntaxException {
+          var getter = other.get(parser);
           if (getter instanceof Float)
                return new BoolValue(value <= (Float) getter);
 
@@ -110,8 +111,8 @@ public class NumValue implements Operable<Float> {
      }
 
      @Override
-     public BoolValue equals(Operable other) throws SyntaxException {
-          var getter = other.get();
+     public BoolValue equals(Operable other, LineParser parser) throws SyntaxException {
+          var getter = other.get(parser);
           if (getter instanceof Float)
                return new BoolValue(value == (Float) getter);
 
@@ -119,8 +120,8 @@ public class NumValue implements Operable<Float> {
      }
 
      @Override
-     public BoolValue notEquals(Operable other) throws SyntaxException {
-          var getter = other.get();
+     public BoolValue notEquals(Operable other, LineParser parser) throws SyntaxException {
+          var getter = other.get(parser);
           if (getter instanceof Float)
                return new BoolValue(value != (Float) getter);
 
@@ -128,7 +129,7 @@ public class NumValue implements Operable<Float> {
      }
 
      @Override
-     public Operable inv() {
+     public Operable inv(LineParser parser) {
           return new NumValue(-value);
      }
 }

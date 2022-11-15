@@ -6,14 +6,15 @@ import pixie.parser.modules.PixieModule;
 import pixie.parser.modules.SocketModule;
 import pixie.parser.values.*;
 
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 public class LineParser {
      public final static String executableType = "px";
-
+     Scanner scaner = new Scanner(System.in);
+     public final Map<String, ClassConstructor> classes = new HashMap<>();
      public final static Map<String, PixieModule> modules = new HashMap<>(Map.ofEntries(
              Map.entry("math", new MathModule()),
              Map.entry("files", new FileModule()),
@@ -37,10 +38,10 @@ public class LineParser {
                                        var parsedLeft = self.parseValue("", inside[0]).value;
                                        if (parsedLeft instanceof NumValue) {
                                             var operator = removeWhitespaces(inside[2]);
-                                            var parsedRight = self.parseValue("", inside[3]).value.get();
+                                            var parsedRight = self.parseValue("", inside[3]).value.get(self);
                                             if (parsedRight instanceof Float) {
-                                                 var move = (Float) self.parseValue("", inside[4]).value.get();
-                                                 for (float i = (Float) parsedLeft.get(); (
+                                                 var move = (Float) self.parseValue("", inside[4]).value.get(self);
+                                                 for (float i = (Float) parsedLeft.get(self); (
                                                          operator.equals("<") ? i < (Float) parsedRight :
                                                                  (operator.equals(">") ? i > (Float) parsedRight :
                                                                          (operator.equals(">=") ? i >= (Float) parsedRight :
@@ -50,12 +51,12 @@ public class LineParser {
                                             }
                                        }
                                        if (parsedLeft instanceof BoolValue) {
-                                            var b = ((BoolValue) parsedLeft).get();
+                                            var b = ((BoolValue) parsedLeft).get(self);
                                             while (b)
-                                                 b = ((BoolValue) self.parse(resultCode.toString()).value).get();
+                                                 b = ((BoolValue) self.parse(resultCode.toString()).value).get(self);
                                        }
                                        if (parsedLeft instanceof InstanceValue) {
-                                            var values = ((InstanceValue) parsedLeft).get();
+                                            var values = ((InstanceValue) parsedLeft).get(self);
                                             values.forEach((String key, Operable o) -> {
                                                  try {
                                                       if (inside.length == 2) {
@@ -70,7 +71,7 @@ public class LineParser {
                                                            self.functions.putAll(result.functs);
                                                       }
                                                  } catch (SyntaxException e) {
-                                                      e.printStackTrace();
+                                                      new SyntaxException(e.getMessage()).printStackTrace();
                                                  }
                                             });
                                        }
@@ -96,7 +97,7 @@ public class LineParser {
                                        self.setLine(end);
 
 
-                                       var value = self.parseValue("", inside).value.get();
+                                       var value = self.parseValue("", inside).value.get(self);
                                        if (value instanceof Boolean) {
                                             if ((Boolean) value) {
                                                  var result = self.parse(resultCode.toString());
@@ -117,7 +118,52 @@ public class LineParser {
                                             }
                                        }
                                   } catch (SyntaxException e) {
-                                       e.printStackTrace();
+                                       new SyntaxException(e.getMessage()).printStackTrace();
+                                  }
+
+                                  return new NullValue();
+                             }
+                     )
+             ),
+             Map.entry("class",
+                     PixieModule.function(
+                             (LineParser self) -> {
+                                  try {
+                                       var name = next();
+
+                                       StringBuilder resultCode = new StringBuilder();
+                                       int end = self.getEnd(self.line_index, self.lines);
+                                       for (int i = self.line_index + 1; i < end; i++)
+                                            resultCode.append(self.lines[i]).append('\n');
+                                       self.setLine(end);
+
+
+                                        var result = self.parseClass(resultCode.toString());
+                                        self.classes.put(name, result);
+
+                                        //self.variables.putAll(result.vars);
+                                        //self.functions.putAll(result.functs);
+                                  } catch (SyntaxException e) {
+                                       new SyntaxException(e.getMessage()).printStackTrace();
+                                  }
+
+                                  return new NullValue();
+                             }
+                     )
+             ),
+             Map.entry(
+                     "input",
+                     PixieModule.function(
+                             (LineParser self) -> {
+                                  try {
+                                       var name = "input";
+                                       var inside = self.getInsideBrackets(getNextString(0, self.line, List.of(name))[0].length() + name.length(), self.line);
+
+                                       System.out.print(parseValue("", inside).value.get(self).toString());
+
+                                       return new TextValue(scaner.next());
+                                  } catch (SyntaxException e) {
+                                       new SyntaxException(e.getMessage()).printStackTrace();
                                   }
 
                                   return new NullValue();
@@ -126,11 +172,11 @@ public class LineParser {
              )
      ));
 
-     private final String code;
-     private String[] lines;
+     protected final String code;
+     protected String[] lines;
      public String line;
      public int line_index = 0;
-     private int position = 0;
+     protected int position = 0;
 
      public void setLine(int line_index) {
           SyntaxException.line = line_index;
@@ -148,7 +194,7 @@ public class LineParser {
           setLine(end);
 
 
-          var value = parseValue("", inside).value.get();
+          var value = parseValue("", inside).value.get(this);
           if (value instanceof Boolean) {
                if (!last && (Boolean) value) {
                     var result = parse(resultCode.toString());
@@ -203,11 +249,11 @@ public class LineParser {
      }
 
      public int getEnd(int from, String[] where, int inited) throws SyntaxException {
-          return getEnd(from, where, "do", "end", inited, Integer.MAX_VALUE);
+          return getEnd(from, where, "{", "}", inited, Integer.MAX_VALUE);
      }
 
      public int getEnd(int from, String[] where, int inited, int max) throws SyntaxException {
-          return getEnd(from, where, "do", "end", inited, max);
+          return getEnd(from, where, "{", "}", inited, max);
      }
 
      public int getEnd(int from, String[] where, String starter, String ender) throws SyntaxException {
@@ -231,7 +277,7 @@ public class LineParser {
           throw new SyntaxException("Missing end '" + ender + "'", from);
      }
 
-     public static Value parseBaseValue(String name, String line) {
+     public Value parseBaseValue(String name, String line) {
           Operable value;
           try {
                value = new NumValue(Float.parseFloat(line));
@@ -245,6 +291,15 @@ public class LineParser {
      }
 
      public Value parseValue(String name, String value) throws SyntaxException {
+          if (value.contains("(") && value.contains("[") && value.contains("{")) {
+               if (removeWhitespaces(value).startsWith("lambda")) {
+                    var move = getInside(0, value, '[', ']').split(",");
+                    var args = removeWhitespaces(getInsideBracketsFixed(0, value)).split(",");
+                    var code = getInside(0, value, '{', '}').replace("->", "\n");
+                    return new Value(name, new FunctionValue(code, args, move));
+               }
+          }
+
           var operators = List.of("&&", "||");
 
           boolean haveOperation = false;
@@ -261,9 +316,9 @@ public class LineParser {
 
                switch (adds[2]) {
                     case "&&":
-                         return new Value(name, parseValue(name, adds[0]).value.and(parseValue(name, adds[1]).value));
+                         return new Value(name, parseValue(name, adds[0]).value.and(parseValue(name, adds[1]).value, this));
                     case "||":
-                         return new Value(name, parseValue(name, adds[0]).value.or(parseValue(name, adds[1]).value));
+                         return new Value(name, parseValue(name, adds[0]).value.or(parseValue(name, adds[1]).value, this));
                }
           }
 
@@ -282,17 +337,17 @@ public class LineParser {
 
                switch (adds[2]) {
                     case ">":
-                         return new Value(name, parseValue(name, adds[0]).value.more(parseValue(name, adds[1]).value));
+                         return new Value(name, parseValue(name, adds[0]).value.more(parseValue(name, adds[1]).value, this));
                     case ">=":
-                         return new Value(name, parseValue(name, adds[0]).value.moreEqu(parseValue(name, adds[1]).value));
+                         return new Value(name, parseValue(name, adds[0]).value.moreEqu(parseValue(name, adds[1]).value, this));
                     case "<":
-                         return new Value(name, parseValue(name, adds[0]).value.less(parseValue(name, adds[1]).value));
+                         return new Value(name, parseValue(name, adds[0]).value.less(parseValue(name, adds[1]).value, this));
                     case "<=":
-                         return new Value(name, parseValue(name, adds[0]).value.lessEqu(parseValue(name, adds[1]).value));
+                         return new Value(name, parseValue(name, adds[0]).value.lessEqu(parseValue(name, adds[1]).value, this));
                     case "==":
-                         return new Value(name, parseValue(name, adds[0]).value.equals(parseValue(name, adds[1]).value));
+                         return new Value(name, parseValue(name, adds[0]).value.equals(parseValue(name, adds[1]).value, this));
                     case "!=":
-                         return new Value(name, parseValue(name, adds[0]).value.notEquals(parseValue(name, adds[1]).value));
+                         return new Value(name, parseValue(name, adds[0]).value.notEquals(parseValue(name, adds[1]).value, this));
                }
           }
 
@@ -310,7 +365,7 @@ public class LineParser {
                var adds = getNextString(0, value, operators);
 
                if ("**".equals(adds[2]))
-                    return new Value(name, parseValue(name, adds[0]).value.pow(parseValue(name, adds[1]).value));
+                    return new Value(name, parseValue(name, adds[0]).value.pow(parseValue(name, adds[1]).value, this));
           }
 
           operators = List.of("+", "-", "*", "/");
@@ -328,18 +383,18 @@ public class LineParser {
 
                switch (adds[2]) {
                     case "+":
-                         return new Value(name, parseValue(name, adds[0]).value.add(parseValue(name, adds[1]).value));
+                         return new Value(name, parseValue(name, adds[0]).value.add(parseValue(name, adds[1]).value, this));
                     case "-":
-                         return new Value(name, parseValue(name, adds[0]).value.sub(parseValue(name, adds[1]).value));
+                         return new Value(name, parseValue(name, adds[0]).value.sub(parseValue(name, adds[1]).value, this));
                     case "*":
-                         return new Value(name, parseValue(name, adds[0]).value.mul(parseValue(name, adds[1]).value));
+                         return new Value(name, parseValue(name, adds[0]).value.mul(parseValue(name, adds[1]).value, this));
                     case "/":
-                         return new Value(name, parseValue(name, adds[0]).value.div(parseValue(name, adds[1]).value));
+                         return new Value(name, parseValue(name, adds[0]).value.div(parseValue(name, adds[1]).value, this));
                }
           }
 
-          if (removeWhitespaces(value).startsWith("'")) {
-               var inside = getInside(0, value, '\'', '\'');
+          if (removeWhitespaces(value).startsWith("\'")) {
+               var inside = getString(0, value);
                return new Value(name, new TextValue(inside
                        .replace("\\\\", "\\")
                        .replace("\\n", "\n")
@@ -347,14 +402,30 @@ public class LineParser {
           }
 
           if (removeWhitespaces(value).startsWith("init")) {
+               var length = getNextString(0, value, List.of("init"))[0].length();
+               var classlength = getNextString(0, value, List.of("("))[0].length();
+               var currentClass = removeWhitespaces(value.substring(length + 4, classlength));
+
                var inst = new InstanceValue();
+               if (classes.containsKey(currentClass) && classes.get(currentClass).functions.containsKey("@init")) {
+                    inst = new InstanceValue(classes.get(currentClass));
+                    var inside = getInsideBrackets(getNextString(0, value, List.of(currentClass))[0].length() + currentClass.length(), value);
+                    var splited = inside.split(",");
 
-               var inside = getInsideBrackets(getNextString(0, value, List.of("init"))[0].length() + "init".length(), value);
-               for (var i : inside.split(",")) {
-                    var _var = i.split(":");
+                    var function = classes.get(currentClass).functions.get("@init");
+                    for (int i = 0; i < function.arguments.length; i++) {
+                         if (classes.get(currentClass).variables.containsKey(removeWhitespaces(function.arguments[i]))) inst.variables.put(removeWhitespaces(function.arguments[i]), parseValue("", splited[i]).value);
+                    }
 
-                    var parsed = parseValue(removeWhitespaces(_var[0]), _var[1]);
-                    inst.value.put(parsed.name, parsed.value);
+                    inst.parse(this, function);
+               } else {
+                    var inside = getInsideBrackets(length + "init".length(), value);
+                    for (var i : inside.split(",")) {
+                         var _var = i.split(":");
+
+                         var parsed = parseValue(removeWhitespaces(_var[0]), _var[1]);
+                         inst.variables.put(parsed.name, parsed.value);
+                    }
                }
 
                return new Value(name, inst);
@@ -362,18 +433,49 @@ public class LineParser {
 
           if (value.contains("(")) {
                var current = getNextString(0, removeWhitespaces(value), List.of("("))[0];
+
                if (haveVariable(current)) {
                     var variable = new Value(name, variables.get(current));
                     if (variable.value instanceof InstanceValue) {
                          var inside = getInsideBrackets(getNextString(0, value, List.of(current))[0].length() + current.length(), value);
 
-                         variable.value = ((InstanceValue) variable.value).get().get(removeWhitespaces(inside));
+                         variable.value = ((InstanceValue) variable.value).get(this).get(removeWhitespaces(inside));
+                    }
+                    if (variable.value instanceof FunctionValue) {
+                         var fun = ((FunctionValue) variable.value);
+                         var movables = new Value[fun.movables.length + fun.arguments.length];
+
+                         for (int i = 0; i < fun.movables.length; i++)
+                              movables[i] = new Value(fun.movables[i], variables.get(fun.movables[i]));
+
+                         var inside = getInsideBrackets(0, value).split(",");
+                         for (int i = 0; i < fun.arguments.length; i++) {
+                              var parsed = parseValue(fun.arguments[i], inside[i]);
+                              movables[fun.movables.length + i] = new Value(parsed.name, parsed.value);
+                         }
+
+                         return new Value(name, parse(fun.value, movables).value);
                     }
                     return variable;
                }
+
                if (haveFunction(current)) {
                     var fun = functions.get(current);
                     if (!fun.code.code.equals("")) return new Value(name, parse(current, fun.code.code).value);
+                    else return new Value(name, fun.code.lamda.apply(this));
+               }
+
+               var splited = current.split("\\.", 2);
+               var variable = ((InstanceValue) variables.get(splited[0]));
+               if (variables.containsKey(splited[0]) && variable.functions.containsKey(splited[1])) {
+                    var fun = variable.functions.get(splited[1]);
+                    if (!fun.code.code.equals("")) return new Value(name, variable.parse(this, current, fun));
+                    else return new Value(name, fun.code.lamda.apply(this));
+               }
+
+               if (classes.containsKey(splited[0]) && classes.get(splited[0]).staticFunctions.containsKey(splited[1])) {
+                    var fun = classes.get(splited[0]).staticFunctions.get(splited[1]);
+                    if (!fun.code.code.equals("")) return new Value(name, parse(current, splited[0], fun).value);
                     else return new Value(name, fun.code.lamda.apply(this));
                }
           } else {
@@ -381,13 +483,24 @@ public class LineParser {
                if (haveVariable(current)) {
                     return new Value(name, variables.get(current));
                }
-               if (haveFunction(current)) {
-                    return new Value(name, new FunctionValue(functions.get(current)));
+
+               var splited = current.split("\\.", 2);
+               var variable = ((InstanceValue) variables.get(splited[0]));
+               if (variables.containsKey(splited[0]) && variable.variables.containsKey(splited[1])) {
+                    return new Value(name, variable.variables.get(splited[1]));
+               }
+
+               if (classes.containsKey(splited[0]) && classes.get(splited[0]).staticVariables.containsKey(splited[1])) {
+                    return new Value(name, classes.get(splited[0]).staticVariables.get(splited[1]));
                }
           }
 
           var nsValue = removeWhitespaces(value);
-          if (nsValue.startsWith("!")) return new Value(name, parseBaseValue(name, nsValue.substring(1)).value.inv());
+          if (nsValue.startsWith("!")) {
+               var removeValue = nsValue.substring(1);
+               if (haveVariable(removeValue) && variables.get(removeValue) instanceof InstanceValue) return new Value(name, variables.get(removeValue).inv(this));
+               else return new Value(name, parseBaseValue(name, removeValue).value.inv(this));
+          }
           else return parseBaseValue(name, nsValue);
      }
 
@@ -427,22 +540,72 @@ public class LineParser {
           return getInside(position, line, '(', ')');
      }
 
-     public String getInside(int position, String line, char startChar, char endChar) throws SyntaxException {
+     public String getString(int position, String line) throws SyntaxException {
           int i;
           int start = -1;
           for (i = position; i < line.length(); i++) {
-               if (line.charAt(i) == startChar) {
+               if (line.charAt(i) == '\'') {
                     start = i + 1;
                     break;
                }
           }
-          if (start == -1) throw new SyntaxException("Waiting for starter '" + startChar + "'");
+          if (start == -1) throw new SyntaxException("Waiting for starter '''");
 
           int end = -1;
           for (i = start; i < line.length(); i++) {
-               if (line.charAt(i) == endChar) {
+               if (line.charAt(i) == '\'') {
                     end = i;
                     break;
+               }
+          }
+          if (end == -1) throw new SyntaxException("Waiting for ender '''");
+
+          return line.substring(start, end);
+     }
+
+     public String getInsideBracketsFixed(int position, String line) throws SyntaxException {
+          int i;
+          int start = -1;
+          for (i = position; i < line.length(); i++) {
+               if (line.charAt(i) == '(') {
+                    start = i + 1;
+                    break;
+               }
+          }
+          if (start == -1) throw new SyntaxException("Waiting for starter '('");
+
+          int end = -1;
+          for (i = start; i < line.length(); i++) {
+               if (line.charAt(i) == ')') {
+                    end = i;
+                    break;
+               }
+          }
+          if (end == -1) throw new SyntaxException("Waiting for ender ')'");
+
+          return line.substring(start, end);
+     }
+
+     public String getInside(int position, String line, char startChar, char endChar) throws SyntaxException {
+          int i;
+          int sides = 0;
+          int start = -1;
+          int end = -1;
+          for (i = position; i < line.length(); i++) {
+               if (line.charAt(i) == startChar) {
+                    if (start == -1) start = i + 1;
+                    sides++;
+               }
+          }
+          if (start == -1) throw new SyntaxException("Waiting for starter '" + startChar + "'");
+
+          for (i = position; i < line.length(); i++) {
+               if (line.charAt(i) == endChar) {
+                    sides--;
+                    if (sides == 0) {
+                         end = i;
+                         break;
+                    }
                }
           }
           if (end == -1) throw new SyntaxException("Waiting for ender '" + endChar + "'");
@@ -450,7 +613,7 @@ public class LineParser {
           return line.substring(start, end);
      }
 
-     public String getInsideBracketsMove(int position, String line) throws SyntaxException {
+     public String getInsideBracketsMove(int position, int linePosition, String line) throws SyntaxException {
           int i;
           int start = -1;
           for (i = position; i < line.length(); i++) {
@@ -574,7 +737,7 @@ public class LineParser {
                     var inside = getInsideBrackets(getNextString(0, line, List.of("print"))[0].length() + "print".length(), line);
                     var parsed = parseValue("print", inside);
 
-                    System.out.println(parsed.value.get().toString());
+                    System.out.println(parsed.value.get(this).toString());
 
                     continue;
                }
@@ -607,6 +770,15 @@ public class LineParser {
                     var fun = functions.get(removeWhitespaces(token));
                     if (!fun.code.code.equals("")) parse(token, fun.code.code);
                     else fun.code.lamda.apply(this);
+
+                    continue;
+               }
+
+               if (haveVariable(removeWhitespaces(token))) {
+                    next();
+                    var value = getAllNext();
+                    var parsed = parseValue(token, value);
+                    variables.put(parsed.name, parsed.value);
                }
           }
      }
@@ -637,6 +809,32 @@ public class LineParser {
           return new Result(parser.variables, parser.functions, parser.variables.get("return"));
      }
 
+     public Result parse(String name, String currentClass, Function function) throws SyntaxException {
+          var parser = new LineParser(function.code.code);
+
+          var inside = getInsideBrackets(getNextString(0, line, List.of(name))[0].length() + name.length(), line).split(",");
+          int val = 0;
+          for (var i : inside) {
+               var parsed = parseValue(removeWhitespaces(function.arguments[val]), i);
+               parser.variables.put(parsed.name, parsed.value);
+               val++;
+          }
+          parser.functions.putAll(functions);
+
+          parser.variables.putAll(classes.get(currentClass).staticVariables);
+          parser.functions.putAll(classes.get(currentClass).staticFunctions);
+
+          parser.parse();
+          return new Result(parser.variables, parser.functions, parser.variables.get("return"));
+     }
+
+     public ClassConstructor parseClass(String code) throws SyntaxException {
+          var parser = new ClassParser(code);
+
+          parser.functions.putAll(functions);
+          return parser.parseClass();
+     }
+
      public static class Value {
           public String name;
           public Operable value;
@@ -656,6 +854,82 @@ public class LineParser {
                this.vars = vars;
                this.functs = functs;
                this.value = value;
+          }
+     }
+
+     public static class ClassParser extends LineParser{
+          public final Map<String, Operable> staticVariables = new HashMap<>();
+          public Map<String, Function> staticFunctions = new HashMap<>();
+
+          public ClassParser(String code) {
+               super(code);
+          }
+
+          public ClassConstructor parseClass() throws SyntaxException {
+               lines = code.split("\n");
+               for (line_index = 0; line_index < lines.length; line_index++) {
+                    SyntaxException.line = line_index;
+                    line = lines[line_index];
+                    position = 0;
+
+                    var token = removeWhitespaces(next());
+
+                    if (token.startsWith("#*")) {
+                         int end = getEnd(line_index, lines, "#*", "*#");
+
+                         setLine(end);
+
+                         continue;
+                    }
+
+                    if (token.startsWith("#")) {
+                         continue;
+                    }
+
+                    boolean isStatic;
+                    if (isStatic = token.startsWith("static")) {
+                         token = next();
+                    }
+
+                    if (token.equals("import")) {
+                         var value = getAllNext();
+                         for (String module : removeWhitespaces(value).split(",")) {
+                              if (modules.containsKey(module)) {
+                                   var parsed = modules.get(module);
+
+                                   staticVariables.putAll(parsed.variables);
+                                   staticFunctions.putAll(parsed.functions);
+                              } else throw new SyntaxException("Cannot import " + module);
+                         }
+
+                         continue;
+                    }
+
+                    if (token.equals("field")) {
+                         var name = next();
+                         next();
+                         var value = getAllNext();
+                         var parsed = parseValue(name, value);
+                         if (isStatic) staticVariables.put(parsed.name, parsed.value);
+                         else variables.put(parsed.name, parsed.value);
+
+                         continue;
+                    }
+
+                    if (token.equals("function")) {
+                         var name = next();
+                         var inside = getInsideBrackets(getNextString(0, line, List.of(name))[0].length() + name.length(), line);
+
+                         StringBuilder resultCode = new StringBuilder();
+                         int end = getEnd(line_index, lines);
+                         for (int i = line_index + 1; i < end; i++)
+                              resultCode.append(lines[i]).append('\n');
+                         setLine(end);
+
+                         (isStatic ? staticFunctions : functions).put(name, new Function(inside.split(","), new Function.Code(resultCode.toString(), i -> new NullValue())));
+                    }
+               }
+               return new ClassConstructor(functions, staticFunctions, variables, staticVariables);
           }
      }
 }
