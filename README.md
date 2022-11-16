@@ -92,9 +92,9 @@ sockets
   You can define your function with ``def``
 
   ```
-  def test_funct(arg0, arg1) do
+  def test_funct(arg0, arg1) {
     print(arg0 + arg1)
-  end
+  }
   ```
 </p>
 </details>
@@ -125,17 +125,17 @@ sockets
   Foreach:
   ```
   var inst = init(x: 1, y: 4)
-  for (inst, value, key) do
+  for (inst, value, key) {
     print(key + ': ' + value)
-  end
+  }
   ```
 
   While
   ```
-  for (<bool>) do
+  for (<bool>) {
     #if return value is false for will breaked
     return(<bool>)
-  end
+  }
   ```
 </p>
 </details>
