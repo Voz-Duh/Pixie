@@ -117,9 +117,9 @@ sockets
 
   For:
   ```
-  for (0, i, <, 4, 1) do
+  for (0, i, <, 4, 1) {
     print(i)
-  end
+  }
   ```
 
   Foreach:
