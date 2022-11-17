@@ -11,11 +11,15 @@ sockets
 </p>
 </details>
 
-## Pixie as jar
+## Pixie run launcher
+
+Open `run.bat` or write in console `java -jar pixie.jar`
+
+### Pixie in console
 
 Open console and write ``java -jar pixie.jar <path_to_your_pixie>`` in pixie.jar directory
 
-## Pixie as lib
+### Pixie as lib
 
 In your main function just write:
 ``
