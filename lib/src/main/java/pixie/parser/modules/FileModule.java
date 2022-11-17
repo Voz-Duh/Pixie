@@ -13,11 +13,11 @@ import java.util.Map;
 
 public class FileModule extends PixieModule {
      public FileModule() {
-          values = Map.ofEntries(
-                  Map.entry("file", FileValue.class)
+          values = LineParser.ofEntries(
+                  LineParser.entry("file", FileValue.class)
           );
-          functions = Map.ofEntries(
-                  Map.entry("get_file",
+          functions = LineParser.ofEntries(
+                  LineParser.entry("get_file",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -30,7 +30,7 @@ public class FileModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("have_file",
+                  LineParser.entry("have_file",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -57,7 +57,7 @@ public class FileModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("create_file",
+                  LineParser.entry("create_file",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -78,7 +78,7 @@ public class FileModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("read_file",
+                  LineParser.entry("read_file",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -97,7 +97,7 @@ public class FileModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("delete_file",
+                  LineParser.entry("delete_file",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -110,7 +110,7 @@ public class FileModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("is_folder",
+                  LineParser.entry("is_folder",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -123,7 +123,7 @@ public class FileModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("is_file",
+                  LineParser.entry("is_file",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -136,7 +136,7 @@ public class FileModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("file_name",
+                  LineParser.entry("file_name",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -149,7 +149,7 @@ public class FileModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("file_path",
+                  LineParser.entry("file_path",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -162,7 +162,7 @@ public class FileModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("get_files",
+                  LineParser.entry("get_files",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -170,7 +170,7 @@ public class FileModule extends PixieModule {
                                             File[] files = parseFile(self, inside).listFiles();
                                             Map.Entry[] entries = new Map.Entry[files.length];
                                             for (int i = 0; i < files.length; i++) {
-                                                 entries[i] = Map.entry("f" + i, new FileValue(files[i]));
+                                                 entries[i] = LineParser.entry("f" + i, new FileValue(files[i]));
                                             }
 
                                             return new InstanceValue(entries);
@@ -181,7 +181,7 @@ public class FileModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("is_executable",
+                  LineParser.entry("is_executable",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -195,7 +195,7 @@ public class FileModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("execute",
+                  LineParser.entry("execute",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -217,7 +217,7 @@ public class FileModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("print_to_file",
+                  LineParser.entry("print_to_file",
                           function(
                                   (LineParser self) -> {
                                        try {

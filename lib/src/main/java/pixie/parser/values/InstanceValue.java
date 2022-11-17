@@ -16,11 +16,11 @@ public class InstanceValue implements Operable<Map<String, Operable>> {
      }
 
      public InstanceValue(Map.Entry... entries) {
-          variables = new HashMap<>(Map.ofEntries(entries));
+          variables = LineParser.ofEntries(entries);
      }
 
      public InstanceValue(ClassConstructor currentClass, Map.Entry... entries) {
-          variables = new HashMap<>(Map.ofEntries(entries));
+          variables = new HashMap<>(LineParser.ofEntries(entries));
           functions = new HashMap<>(currentClass.functions);
           variables = new HashMap<>(currentClass.variables);
           this.currentClass = currentClass;
@@ -177,7 +177,7 @@ public class InstanceValue implements Operable<Map<String, Operable>> {
      public Operable parse(LineParser self, String name, Function function) throws SyntaxException {
           LineParser parser = new LineParser(function.code.code, currentClass.line);
 
-          String[] inside = self.split(self.getInsideBrackets(self.getNextString(0, self.line, List.of(name))[0].length() + name.length(), self.line), ',');
+          String[] inside = self.split(self.getInsideBrackets(self.getNextString(0, self.line, LineParser.listOf(name))[0].length() + name.length(), self.line), ',');
           int val = 0;
           for (String i : inside) {
                LineParser.Value parsed = self.parseValue(LineParser.removeWhitespaces(function.arguments[val]), i);

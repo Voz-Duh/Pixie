@@ -9,11 +9,11 @@ import java.util.Random;
 
 public class MathModule extends PixieModule {
      public MathModule() {
-          variables = Map.ofEntries(
-                  Map.entry("pi", new NumValue((float) Math.PI))
+          variables = LineParser.ofEntries(
+                  LineParser.entry("pi", new NumValue((float) Math.PI))
           );
-          functions = Map.ofEntries(
-                  Map.entry("sin",
+          functions = LineParser.ofEntries(
+                  LineParser.entry("sin",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -26,7 +26,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("cos",
+                  LineParser.entry("cos",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -39,7 +39,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("dsin",
+                  LineParser.entry("dsin",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -52,7 +52,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("dcos",
+                  LineParser.entry("dcos",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -65,7 +65,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("asin",
+                  LineParser.entry("asin",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -78,7 +78,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("acos",
+                  LineParser.entry("acos",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -91,7 +91,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("dasin",
+                  LineParser.entry("dasin",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -104,7 +104,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("dacos",
+                  LineParser.entry("dacos",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -117,7 +117,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("sinh",
+                  LineParser.entry("sinh",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -130,7 +130,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("cosh",
+                  LineParser.entry("cosh",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -143,7 +143,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("dsinh",
+                  LineParser.entry("dsinh",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -156,7 +156,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("dcosh",
+                  LineParser.entry("dcosh",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -169,7 +169,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("rad",
+                  LineParser.entry("rad",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -182,7 +182,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("deg",
+                  LineParser.entry("deg",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -195,7 +195,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("tan",
+                  LineParser.entry("tan",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -208,7 +208,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("atan2",
+                  LineParser.entry("atan2",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -221,7 +221,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("atan",
+                  LineParser.entry("atan",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -234,7 +234,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("clamp",
+                  LineParser.entry("clamp",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -247,7 +247,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("max",
+                  LineParser.entry("max",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -260,7 +260,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("min",
+                  LineParser.entry("min",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -273,7 +273,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("lerp_deg",
+                  LineParser.entry("lerp_deg",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -286,7 +286,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("lerp_rad",
+                  LineParser.entry("lerp_rad",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -299,7 +299,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("lerp",
+                  LineParser.entry("lerp",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -312,7 +312,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("random",
+                  LineParser.entry("random",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -330,7 +330,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("floor",
+                  LineParser.entry("floor",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -343,7 +343,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("ceil",
+                  LineParser.entry("ceil",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -356,7 +356,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("round",
+                  LineParser.entry("round",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -369,7 +369,7 @@ public class MathModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("sqrt",
+                  LineParser.entry("sqrt",
                           function(
                                   (LineParser self) -> {
                                        try {

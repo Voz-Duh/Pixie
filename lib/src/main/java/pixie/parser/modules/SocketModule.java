@@ -17,12 +17,12 @@ import java.util.Map;
 public class SocketModule extends PixieModule {
      public SocketModule() {
 
-          values = Map.ofEntries(
-                  Map.entry("socket", SocketValue.class),
-                  Map.entry("server", ServerSocketValue.class)
+          values = LineParser.ofEntries(
+                  LineParser.entry("socket", SocketValue.class),
+                  LineParser.entry("server", ServerSocketValue.class)
           );
-          functions = Map.ofEntries(
-                  Map.entry("create_socket",
+          functions = LineParser.ofEntries(
+                  LineParser.entry("create_socket",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -41,12 +41,12 @@ public class SocketModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("create_clients",
+                  LineParser.entry("create_clients",
                           function(
                                   (LineParser self) -> new InstanceValue()
                           )
                   ),
-                  Map.entry("create_server",
+                  LineParser.entry("create_server",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -58,7 +58,7 @@ public class SocketModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("server_accept",
+                  LineParser.entry("server_accept",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -75,7 +75,7 @@ public class SocketModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("server_send",
+                  LineParser.entry("server_send",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -94,7 +94,7 @@ public class SocketModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("socket_send",
+                  LineParser.entry("socket_send",
                           function(
                                   (LineParser self) -> {
                                        try {
@@ -111,7 +111,7 @@ public class SocketModule extends PixieModule {
                                   }
                           )
                   ),
-                  Map.entry("socket_get",
+                  LineParser.entry("socket_get",
                           function(
                                   (LineParser self) -> {
                                        try {

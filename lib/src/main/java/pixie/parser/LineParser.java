@@ -13,27 +13,74 @@ public class LineParser {
      public final static String executableType = "px";
      public final static Scanner scaner = new Scanner(System.in);
      public final Map<String, ClassConstructor> classes = new HashMap<>();
-     public final static Map<String, PixieModule> modules = new HashMap<>(Map.ofEntries(
-             Map.entry("math", new MathModule()),
-             Map.entry("files", new FileModule()),
-             Map.entry("sockets", new SocketModule())
+
+     public static <K, V> Map<K, V> ofEntries(Map.Entry<K, V>... entries) {
+          Map<K, V> map = new HashMap<>();
+          for (Map.Entry<K, V> entry : entries) {
+               map.put(entry.getKey(), entry.getValue());
+          }
+          return map;
+     }
+
+     public static <V> List<V> listOf(V... values) {
+          List<V> list = new ArrayList<>();
+          for (V entry : values) {
+               list.add(entry);
+          }
+          return list;
+     }
+
+     public static <K, V> Map.Entry entry(K key, V value) {
+          return new Entry(key, value);
+     }
+
+     public static class Entry<K, V> implements Map.Entry<K, V> {
+          V value;
+          K key;
+
+          public Entry(K key, V value) {
+               this.key = key;
+               this.value = value;
+          }
+
+          @Override
+          public K getKey() {
+               return key;
+          }
+
+          @Override
+          public V getValue() {
+               return value;
+          }
+
+          @Override
+          public V setValue(V value) {
+               this.value = value;
+               return value;
+          }
+     }
+
+     public final static Map<String, PixieModule> modules = new HashMap<>(ofEntries(
+             entry("math", new MathModule()),
+             entry("files", new FileModule()),
+             entry("sockets", new SocketModule())
      ));
-     public final Map<String, Class> values = new HashMap<>(Map.ofEntries(
-             Map.entry("number", NumValue.class),
-             Map.entry("instance", InstanceValue.class),
-             Map.entry("bool", BoolValue.class),
-             Map.entry("text", TextValue.class),
-             Map.entry("null", NullValue.class),
-             Map.entry("lambda", FunctionValue.class)
+     public final Map<String, Class> values = new HashMap<>(ofEntries(
+             entry("number", NumValue.class),
+             entry("instance", InstanceValue.class),
+             entry("bool", BoolValue.class),
+             entry("text", TextValue.class),
+             entry("null", NullValue.class),
+             entry("lambda", FunctionValue.class)
      ));
      public final Map<String, Operable> variables = new HashMap<>();
-     public final Map<String, Function> functions = new HashMap<>(Map.ofEntries(
-             Map.entry("for",
+     public final Map<String, Function> functions = new HashMap<>(ofEntries(
+             entry("for",
                      PixieModule.function(
                              (LineParser self) -> {
                                   try {
                                        String name = "for";
-                                       String[] inside = self.getInsideBrackets(getNextString(0, self.line, List.of(name))[0].length() + name.length(), self.line).split(",");
+                                       String[] inside = self.getInsideBrackets(getNextString(0, self.line, listOf(name))[0].length() + name.length(), self.line).split(",");
 
                                        StringBuilder resultCode = new StringBuilder();
                                        int end = self.getEnd(self.lineIndex, self.lines);
@@ -103,12 +150,12 @@ public class LineParser {
                              }
                      )
              ),
-             Map.entry("if",
+             entry("if",
                      PixieModule.function(
                              (LineParser self) -> {
                                   try {
                                        String name = "if";
-                                       String inside = self.getInsideBrackets(getNextString(0, self.line, List.of(name))[0].length() + name.length(), self.line);
+                                       String inside = self.getInsideBrackets(getNextString(0, self.line, listOf(name))[0].length() + name.length(), self.line);
 
                                        StringBuilder resultCode = new StringBuilder();
                                        int end = self.getEnd(self.lineIndex, self.lines);
@@ -145,7 +192,7 @@ public class LineParser {
                              }
                      )
              ),
-             Map.entry("class",
+             entry("class",
                      PixieModule.function(
                              (LineParser self) -> {
                                   try {
@@ -171,13 +218,13 @@ public class LineParser {
                              }
                      )
              ),
-             Map.entry(
+             entry(
                      "input",
                      PixieModule.function(
                              (LineParser self) -> {
                                   try {
                                        String name = "input";
-                                       String inside = self.getInsideBrackets(getNextString(0, self.line, List.of(name))[0].length() + name.length(), self.line);
+                                       String inside = self.getInsideBrackets(getNextString(0, self.line, listOf(name))[0].length() + name.length(), self.line);
 
                                        System.out.print(parseValue("", inside).value.get(self).toString());
 
@@ -211,7 +258,7 @@ public class LineParser {
 
      public static void reactElif(boolean last, LineParser self) throws SyntaxException {
           String name = "elif";
-          String inside = self.getInsideBrackets(getNextString(0, self.line, List.of(name))[0].length() + name.length(), self.line);
+          String inside = self.getInsideBrackets(getNextString(0, self.line, listOf(name))[0].length() + name.length(), self.line);
 
           StringBuilder resultCode = new StringBuilder();
           int end = self.getEnd(self.lineIndex, self.lines);
@@ -329,7 +376,7 @@ public class LineParser {
                isInversed = true;
           }
 
-          List<CharSequence> operators = List.of("&&", "||");
+          List<CharSequence> operators = listOf("&&", "||");
 
           boolean haveOperation = false;
           for (CharSequence s : operators) {
@@ -353,7 +400,7 @@ public class LineParser {
                }
           }
 
-          operators = List.of(">=", ">", "<=", "<", "==", "!=");
+          operators = listOf(">=", ">", "<=", "<", "==", "!=");
 
           haveOperation = false;
           for (CharSequence s : operators) {
@@ -387,7 +434,7 @@ public class LineParser {
           }
 
           if (value.contains("**")) {
-               String[] adds = getNextString(0, value, List.of("**"));
+               String[] adds = getNextString(0, value, listOf("**"));
 
                Operable parsedValue = parseValue(name, adds[0]).value;
                if (isInversed) parsedValue = parsedValue.inv(this);
@@ -395,7 +442,7 @@ public class LineParser {
                return new Value(name, parsedValue.pow(parseValue(name, adds[1]).value, this));
           }
 
-          operators = List.of("+", "-", "*", "/");
+          operators = listOf("+", "-", "*", "/");
 
           haveOperation = false;
           for (CharSequence s : operators) {
@@ -424,7 +471,7 @@ public class LineParser {
           }
 
           if (value.contains("instof")) {
-               String[] adds = getNextString(0, value, List.of("instof"));
+               String[] adds = getNextString(0, value, listOf("instof"));
 
                Value parsed = parseValue(name, adds[0]);
                String cleared = removeWhitespaces(adds[1]);
@@ -463,14 +510,14 @@ public class LineParser {
           }
 
           if (removeWhitespaces(value).startsWith("init")) {
-               int length = getNextString(0, value, List.of("init"))[0].length();
-               int classlength = getNextString(0, value, List.of("("))[0].length();
+               int length = getNextString(0, value, listOf("init"))[0].length();
+               int classlength = getNextString(0, value, listOf("("))[0].length();
                String currentClass = removeWhitespaces(value.substring(length + 4, classlength));
 
                InstanceValue inst = new InstanceValue();
                if (classes.containsKey(currentClass) && classes.get(currentClass).functions.containsKey("@init")) {
                     inst = new InstanceValue(classes.get(currentClass));
-                    String inside = getInsideBrackets(getNextString(0, value, List.of(currentClass))[0].length() + currentClass.length(), value);
+                    String inside = getInsideBrackets(getNextString(0, value, listOf(currentClass))[0].length() + currentClass.length(), value);
                     String[] splited = split(inside, ',');
 
                     Function function = classes.get(currentClass).functions.get("@init");
@@ -494,12 +541,12 @@ public class LineParser {
           }
 
           if (value.contains("(")) {
-               String current = getNextString(0, removeWhitespaces(value), List.of("("))[0];
+               String current = getNextString(0, removeWhitespaces(value), listOf("("))[0];
 
                if (haveVariable(current)) {
                     Value variable = new Value(name, variables.get(current));
                     if (variable.value instanceof InstanceValue) {
-                         String inside = getInsideBrackets(getNextString(0, value, List.of(current))[0].length() + current.length(), value);
+                         String inside = getInsideBrackets(getNextString(0, value, listOf(current))[0].length() + current.length(), value);
 
                          variable.value = ((InstanceValue) variable.value).get(this).get(removeWhitespaces(inside));
                     }
@@ -570,7 +617,7 @@ public class LineParser {
           return str.replaceAll(" ", "").replaceAll("\n", "");
      }
 
-     private static final List<Character> splitIgnore = List.of(
+     private static final List<Character> splitIgnore = listOf(
              '(', ')', '[', ']', ':', '{', '}'
      );
 
@@ -604,7 +651,7 @@ public class LineParser {
           return result.toArray(new String[0]);
      }
 
-     private final List<Character> charOperators = List.of(
+     private final List<Character> charOperators = listOf(
              '(', ')', '[', ']', ':', ',', '{', '}'
      );
 
@@ -814,7 +861,7 @@ public class LineParser {
                }
 
                if (token.equals("print")) {
-                    String inside = getInsideBrackets(getNextString(0, line, List.of("print"))[0].length() + "print".length(), line);
+                    String inside = getInsideBrackets(getNextString(0, line, listOf("print"))[0].length() + "print".length(), line);
                     Value parsed = parseValue("print", inside);
 
                     System.out.println(parsed.value.get(this).toString());
@@ -824,7 +871,7 @@ public class LineParser {
 
                if (token.equals("def")) {
                     String name = next();
-                    String inside = getInsideBrackets(getNextString(0, line, List.of(name))[0].length() + name.length(), line);
+                    String inside = getInsideBrackets(getNextString(0, line, listOf(name))[0].length() + name.length(), line);
 
                     StringBuilder resultCode = new StringBuilder();
                     int end = getEnd(lineIndex, lines);
@@ -985,7 +1032,7 @@ public class LineParser {
      public Result parse(String name, String code) throws SyntaxException {
           LineParser parser = new LineParser(code, lineIndex + 1 + executorLine);
 
-          String[] inside = split(getInsideBrackets(getNextString(0, line, List.of(name))[0].length() + name.length(), line), ',');
+          String[] inside = split(getInsideBrackets(getNextString(0, line, listOf(name))[0].length() + name.length(), line), ',');
           int val = 0;
           Function funct = functions.get(removeWhitespaces(name));
           for (String i : inside) {
@@ -1011,7 +1058,7 @@ public class LineParser {
      public Result parse(String name, String currentClass, Function function) throws SyntaxException {
           LineParser parser = new LineParser(function.code.code, lineIndex + 1 + executorLine);
 
-          String[] inside = split(getInsideBrackets(getNextString(0, line, List.of(name))[0].length() + name.length(), line), ',');
+          String[] inside = split(getInsideBrackets(getNextString(0, line, listOf(name))[0].length() + name.length(), line), ',');
           int val = 0;
           for (String i : inside) {
                Value parsed = parseValue(removeWhitespaces(function.arguments[val]), i);
@@ -1117,7 +1164,7 @@ public class LineParser {
 
                     if (token.equals("function")) {
                          String name = next();
-                         String inside = getInsideBrackets(getNextString(0, line, List.of(name))[0].length() + name.length(), line);
+                         String inside = getInsideBrackets(getNextString(0, line, listOf(name))[0].length() + name.length(), line);
 
                          StringBuilder resultCode = new StringBuilder();
                          int end = getEnd(lineIndex, lines);
