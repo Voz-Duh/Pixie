@@ -1,17 +1,5 @@
 # Pixie
 
-## Pixie is lib
-You need java project for using Pixie
-
-In your project you need java class with main function inside that function just write that:
-``
-Pixie.execute(<path_to_your_px_file>)
-``
-or
-``
-Pixie.executeResource(<path_to_your_px_file_inside_resources>, CurrentClass.class)
-``
-
 <details><summary>Available modules</summary>
 <p>
 
@@ -23,6 +11,21 @@ sockets
 </p>
 </details>
 
+## Pixie as jar
+
+Open console and write ``java -jar pixie.jar <path_to_your_px>`` in pixie.jar directory
+
+## Pixie as lib
+
+In your main function just write:
+``
+Pixie.execute(<path_to_your_px_file>)
+``
+or
+``
+Pixie.executeResource(<path_to_your_px_file_inside_resources>, CurrentClass.class)
+``
+
 ### Syntex
 
 <details><summary>Classes</summary>
@@ -31,7 +34,7 @@ sockets
   You can define class by ``class``
   
   Class example:
-  ```
+  ```py
   class Test {
       import math
 
@@ -42,15 +45,15 @@ sockets
       }
 
       function @add(other) {
-          return(f_str + other)
+          return f_str + other
       }
 
       function @inv() {
-          return(!f_val)
+          return !f_val
       }
 
       function test(string, test) {
-          return(string + test + dsin(f_val))
+          return string + test + dsin(f_val)
       }
   }
   ```
@@ -73,15 +76,13 @@ sockets
   For string values you need write it inside apostrophes
 
   Example: ``'Hello world!'``
-
-  So, you cannot write ``'Hello, how are you?'`` that will break text just replace ``,`` to ``\.``
 </p>
 </details>
 
 <details><summary>Import</summary>
 <p>
 
-  You can import new module by ``import <some_module>`` or import modules by ``import <some_module>, <more_some_module>``
+  You can import new module by ``import <some_module>`` or import modules by ``import <some_module>, <more_modules>``
 </p>
 </details>
 
@@ -91,7 +92,7 @@ sockets
 
   You can define your function with ``def``
 
-  ```
+  ```py
   def test_funct(arg0, arg1) {
     print(arg0 + arg1)
   }
@@ -116,14 +117,14 @@ sockets
   <p>
 
   For:
-  ```
+  ```py
   for (0, i, <, 4, 1) {
     print(i)
   }
   ```
 
   Foreach:
-  ```
+  ```py
   var inst = init(x: 1, y: 4)
   for (inst, value, key) {
     print(key + ': ' + value)
@@ -131,10 +132,10 @@ sockets
   ```
 
   While
-  ```
+  ```py
   for (<bool>) {
     #if return value is false for will breaked
-    return(<bool>)
+    return <bool>
   }
   ```
 </p>
@@ -145,7 +146,7 @@ You free to write your own Pixie module and use them inside your Pixie code
 <details><summary>Here you can see little example module</summary>
 <p>
 
-```
+```java
 public class Run {
      public static void main(String[] args) {
           Pixie.addModule("example", new ExampleModule());
@@ -169,7 +170,7 @@ public class Run {
                                function(
                                        (LineParser self) -> {
                                             try {
-                                                 var inside = one(self, "example_function_one");
+                                                 String inside = one(self, "example_function_one");
                                                  System.out.println("Real example: " + parseText(self, inside));
                                             } catch (SyntaxException e) {
                                                  new SyntaxException(e.getMessage()).printStackTrace();
@@ -182,7 +183,7 @@ public class Run {
                                function(
                                        (LineParser self) -> {
                                             try {
-                                                 var inside = base(self, "example_function_base");
+                                                 String[] inside = base(self, "example_function_base");
                                                  System.out.println("Real example: " + parseText(self, inside[0]) + " : " + parseText(self, inside[1]));
                                             } catch (SyntaxException e) {
                                                  new SyntaxException(e.getMessage()).printStackTrace();
