@@ -13,17 +13,17 @@ sockets
 
 ## Pixie as jar
 
-Open console and write ``java -jar pixie.jar <path_to_your_px>`` in pixie.jar directory
+Open console and write ``java -jar pixie.jar <path_to_your_pixie>`` in pixie.jar directory
 
 ## Pixie as lib
 
 In your main function just write:
 ``
-Pixie.execute(<path_to_your_px_file>)
+Pixie.execute(<path_to_your_pixie_file>)
 ``
 or
 ``
-Pixie.executeResource(<path_to_your_px_file_inside_resources>, CurrentClass.class)
+Pixie.executeResource(<path_to_your_pixie_file_inside_resources>, CurrentClass.class)
 ``
 
 ### Syntex
