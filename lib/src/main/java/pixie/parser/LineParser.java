@@ -10,7 +10,7 @@ import java.util.*;
 
 public class LineParser {
      public int executorLine;
-     public final static String executableType = "px";
+     public final static String executableType = "pixie";
      public final static Scanner scaner = new Scanner(System.in);
      public final Map<String, ClassConstructor> classes = new HashMap<>();
 
