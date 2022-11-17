@@ -18,8 +18,7 @@ public class TextValue implements Operable<String> {
 
      @Override
      public Operable add(Operable other, LineParser parser) {
-          var getter = other.get(parser);
-          return new TextValue(value + getter);
+          return new TextValue(value + other.get(parser).toString());
      }
 
      @Override
@@ -74,14 +73,12 @@ public class TextValue implements Operable<String> {
 
      @Override
      public BoolValue equals(Operable other, LineParser parser) {
-          var getter = other.get(parser);
-          return new BoolValue(value.equals(getter));
+          return new BoolValue(value.equals(other.get(parser).toString()));
      }
 
      @Override
      public BoolValue notEquals(Operable other, LineParser parser) {
-          var getter = other.get(parser);
-          return new BoolValue(!value.equals(getter));
+          return new BoolValue(!value.equals(other.get(parser).toString()));
      }
 
      @Override

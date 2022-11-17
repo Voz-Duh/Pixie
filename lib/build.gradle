@@ -2,5 +2,10 @@ apply plugin: 'java'
 apply plugin: 'idea'
 
 jar {
+    manifest {
+        attributes 'Main-Class': 'pixie.Pixie'
+    }
     baseName = 'pixie'
 }
+sourceCompatibility = JavaVersion.VERSION_1_9
+targetCompatibility = JavaVersion.VERSION_1_9

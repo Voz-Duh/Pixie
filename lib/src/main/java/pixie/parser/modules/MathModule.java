@@ -17,7 +17,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "sin");
+                                            String inside = one(self, "sin");
                                             return new NumValue((float) Math.sin(parseNum(self, inside)));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -30,7 +30,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "cos");
+                                            String inside = one(self, "cos");
                                             return new NumValue((float) Math.cos(parseNum(self, inside)));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -43,7 +43,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "dsin");
+                                            String inside = one(self, "dsin");
                                             return new NumValue((float) Math.sin(Math.toRadians(parseNum(self, inside))));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -56,7 +56,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "dcos");
+                                            String inside = one(self, "dcos");
                                             return new NumValue((float) Math.cos(Math.toRadians(parseNum(self, inside))));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -69,7 +69,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "asin");
+                                            String inside = one(self, "asin");
                                             return new NumValue((float) Math.asin(parseNum(self, inside)));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -82,7 +82,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "caos");
+                                            String inside = one(self, "caos");
                                             return new NumValue((float) Math.acos(parseNum(self, inside)));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -95,7 +95,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "dasin");
+                                            String inside = one(self, "dasin");
                                             return new NumValue((float) Math.asin(Math.toRadians(parseNum(self, inside))));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -108,7 +108,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "dacos");
+                                            String inside = one(self, "dacos");
                                             return new NumValue((float) Math.acos(Math.toRadians(parseNum(self, inside))));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -121,7 +121,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "sinh");
+                                            String inside = one(self, "sinh");
                                             return new NumValue((float) Math.sinh(parseNum(self, inside)));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -134,7 +134,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "cosh");
+                                            String inside = one(self, "cosh");
                                             return new NumValue((float) Math.cosh(parseNum(self, inside)));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -147,7 +147,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "dsinh");
+                                            String inside = one(self, "dsinh");
                                             return new NumValue((float) Math.sinh(Math.toRadians(parseNum(self, inside))));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -160,7 +160,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "dcosh");
+                                            String inside = one(self, "dcosh");
                                             return new NumValue((float) Math.cosh(Math.toRadians(parseNum(self, inside))));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -173,7 +173,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "rad");
+                                            String inside = one(self, "rad");
                                             return new NumValue((float) Math.toRadians(parseNum(self, inside)));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -186,7 +186,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "deg");
+                                            String inside = one(self, "deg");
                                             return new NumValue((float) Math.toDegrees(parseNum(self, inside)));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -199,7 +199,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "tan");
+                                            String inside = one(self, "tan");
                                             return new NumValue((float) Math.tan(parseNum(self, inside)));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -212,7 +212,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = base(self, "atan2");
+                                            String[] inside = base(self, "atan2");
                                             return new NumValue((float) Math.atan2(parseNum(self, inside[0]), parseNum(self, inside[0])));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -225,7 +225,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "atan");
+                                            String inside = one(self, "atan");
                                             return new NumValue((float) Math.atan(parseNum(self, inside)));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -238,7 +238,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = base(self, "clamp");
+                                            String[] inside = base(self, "clamp");
                                             return new NumValue(Math.max(Math.min(parseNum(self, inside[0]), parseNum(self, inside[2])), parseNum(self, inside[1])));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -251,7 +251,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = base(self, "max");
+                                            String[] inside = base(self, "max");
                                             return new NumValue(Math.max(parseNum(self, inside[0]), parseNum(self, inside[2])));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -264,7 +264,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = base(self, "min");
+                                            String[] inside = base(self, "min");
                                             return new NumValue(Math.min(parseNum(self, inside[0]), parseNum(self, inside[1])));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -277,7 +277,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = base(self, "lerp_deg");
+                                            String[] inside = base(self, "lerp_deg");
                                             return new NumValue(angleLerp((float) Math.toRadians(parseNum(self, inside[0])), (float) Math.toRadians(parseNum(self, inside[1])), parseNum(self, inside[2])));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -290,7 +290,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = base(self, "lerp_rad");
+                                            String[] inside = base(self, "lerp_rad");
                                             return new NumValue(angleLerp(parseNum(self, inside[0]), parseNum(self, inside[1]), parseNum(self, inside[2])));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -303,7 +303,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = base(self, "lerp");
+                                            String[] inside = base(self, "lerp");
                                             return new NumValue(lerp(parseNum(self, inside[0]), parseNum(self, inside[1]), parseNum(self, inside[2])));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -316,11 +316,11 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = base(self, "random");
-                                            if (inside.length == 0)
-                                                 return new NumValue(random());
-                                            else if (inside.length == 1)
-                                                 return new NumValue(random(parseNum(self, inside[0])));
+                                            String[] inside = base(self, "random");
+
+                                            if (inside.length == 1)
+                                                 if (LineParser.removeWhitespaces(inside[0]).equals("")) return new NumValue(random());
+                                                 else return new NumValue(random(parseNum(self, inside[0])));
                                             else
                                                  return new NumValue(random(parseNum(self, inside[0]), parseNum(self, inside[1])));
                                        } catch (SyntaxException e) {
@@ -334,7 +334,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "floor");
+                                            String inside = one(self, "floor");
                                             return new NumValue((float) Math.floor(parseNum(self, inside)));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -347,7 +347,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "ceil");
+                                            String inside = one(self, "ceil");
                                             return new NumValue((float) Math.ceil(parseNum(self, inside)));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -360,7 +360,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "round");
+                                            String inside = one(self, "round");
                                             return new NumValue((float) Math.round(parseNum(self, inside)));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();
@@ -373,7 +373,7 @@ public class MathModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "sqrt");
+                                            String inside = one(self, "sqrt");
                                             return new NumValue((float) Math.sqrt(parseNum(self, inside)));
                                        } catch (SyntaxException e) {
                                             e.printStackTrace();

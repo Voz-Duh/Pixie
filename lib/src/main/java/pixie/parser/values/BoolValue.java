@@ -19,7 +19,7 @@ public class BoolValue implements Operable<Boolean> {
 
      @Override
      public Operable add(Operable other, LineParser parser) throws SyntaxException {
-          var getter = other.get(parser);
+          Object getter = other.get(parser);
           if (getter instanceof String)
                return new TextValue(String.valueOf(value) + getter);
 
@@ -48,7 +48,7 @@ public class BoolValue implements Operable<Boolean> {
 
      @Override
      public Operable and(Operable other, LineParser parser) throws SyntaxException {
-          var getter = other.get(parser);
+          Object getter = other.get(parser);
           if (getter instanceof Boolean)
                return new BoolValue(value && (Boolean) getter);
 
@@ -57,7 +57,7 @@ public class BoolValue implements Operable<Boolean> {
 
      @Override
      public Operable or(Operable other, LineParser parser) throws SyntaxException {
-          var getter = other.get(parser);
+          Object getter = other.get(parser);
           if (getter instanceof Boolean)
                return new BoolValue(value || (Boolean) getter);
 
@@ -86,7 +86,7 @@ public class BoolValue implements Operable<Boolean> {
 
      @Override
      public BoolValue equals(Operable other, LineParser parser) throws SyntaxException {
-          var getter = other.get(parser);
+          Object getter = other.get(parser);
           if (getter instanceof Boolean)
                return new BoolValue(value == (Boolean) getter);
 
@@ -95,7 +95,7 @@ public class BoolValue implements Operable<Boolean> {
 
      @Override
      public BoolValue notEquals(Operable other, LineParser parser) throws SyntaxException {
-          var getter = other.get(parser);
+          Object getter = other.get(parser);
           if (getter instanceof Boolean)
                return new BoolValue(value != (Boolean) getter);
 

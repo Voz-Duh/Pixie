@@ -13,13 +13,15 @@ import java.util.Map;
 
 public class FileModule extends PixieModule {
      public FileModule() {
-          variables = Map.ofEntries();
+          values = Map.ofEntries(
+                  Map.entry("file", FileValue.class)
+          );
           functions = Map.ofEntries(
                   Map.entry("get_file",
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "get_file");
+                                            String inside = one(self, "get_file");
                                             return new FileValue(new File(parseText(self, inside)));
                                        } catch (SyntaxException e) {
                                             new SyntaxException(e.getMessage()).printStackTrace();
@@ -32,10 +34,10 @@ public class FileModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = base(self, "have_file");
+                                            String[] inside = base(self, "have_file");
                                             StringBuilder result = new StringBuilder();
                                             if (inside.length == 2) {
-                                                 var file = parseFile(self, inside[1]);
+                                                 File file = parseFile(self, inside[1]);
                                                  if (file.isFile()) result.append(file.getPath()).append('\\');
                                                  else result.append(file.getAbsoluteFile()).append('\\');
 
@@ -59,10 +61,10 @@ public class FileModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = base(self, "create_file");
+                                            String[] inside = base(self, "create_file");
                                             StringBuilder result = new StringBuilder();
                                             if (inside.length == 2) {
-                                                 var file = parseFile(self, inside[1]);
+                                                 File file = parseFile(self, inside[1]);
                                                  if (file.isFile()) result.append(file.getPath()).append('\\');
                                                  else result.append(file.getAbsoluteFile()).append('\\');
                                             }
@@ -80,7 +82,7 @@ public class FileModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "read_file");
+                                            String inside = one(self, "read_file");
 
                                             final StringBuilder result = new StringBuilder();
                                             BufferedReader br = new BufferedReader(new FileReader(parseFile(self, inside)));
@@ -99,7 +101,7 @@ public class FileModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "delete_file");
+                                            String inside = one(self, "delete_file");
                                             parseFile(self, inside).delete();
                                        } catch (SyntaxException e) {
                                             new SyntaxException(e.getMessage()).printStackTrace();
@@ -112,7 +114,7 @@ public class FileModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "is_folder");
+                                            String inside = one(self, "is_folder");
                                             return new BoolValue(parseFile(self, inside).isDirectory());
                                        } catch (SyntaxException e) {
                                             new SyntaxException(e.getMessage()).printStackTrace();
@@ -125,7 +127,7 @@ public class FileModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "is_file");
+                                            String inside = one(self, "is_file");
                                             return new BoolValue(parseFile(self, inside).isFile());
                                        } catch (SyntaxException e) {
                                             new SyntaxException(e.getMessage()).printStackTrace();
@@ -138,7 +140,7 @@ public class FileModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "file_name");
+                                            String inside = one(self, "file_name");
                                             return new TextValue(parseFile(self, inside).getName());
                                        } catch (SyntaxException e) {
                                             new SyntaxException(e.getMessage()).printStackTrace();
@@ -151,7 +153,7 @@ public class FileModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "file_path");
+                                            String inside = one(self, "file_path");
                                             return new TextValue(parseFile(self, inside).getPath());
                                        } catch (SyntaxException e) {
                                             new SyntaxException(e.getMessage()).printStackTrace();
@@ -164,8 +166,8 @@ public class FileModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "get_files");
-                                            var files = parseFile(self, inside).listFiles();
+                                            String inside = one(self, "get_files");
+                                            File[] files = parseFile(self, inside).listFiles();
                                             Map.Entry[] entries = new Map.Entry[files.length];
                                             for (int i = 0; i < files.length; i++) {
                                                  entries[i] = Map.entry("f" + i, new FileValue(files[i]));
@@ -183,8 +185,8 @@ public class FileModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "is_executable");
-                                            var file = parseFile(self, inside);
+                                            String inside = one(self, "is_executable");
+                                            File file = parseFile(self, inside);
                                             return new BoolValue(file.isFile() && file.getName().endsWith("." + LineParser.executableType));
                                        } catch (SyntaxException e) {
                                             new SyntaxException(e.getMessage()).printStackTrace();
@@ -197,14 +199,14 @@ public class FileModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "execute");
+                                            String inside = one(self, "execute");
 
                                             final StringBuilder result = new StringBuilder();
                                             BufferedReader br = new BufferedReader(new FileReader(parseFile(self, inside)));
 
                                             br.lines().forEach(s -> result.append(s).append('\n'));
 
-                                            var parse_result = self.parse(result.toString());
+                                            LineParser.Result parse_result = self.parse(result.toString());
 
                                             self.variables.putAll(parse_result.vars);
                                             self.functions.putAll(parse_result.functs);
@@ -219,8 +221,8 @@ public class FileModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = base(self, "print_to_file");
-                                            var file = parseFile(self, inside[0]);
+                                            String[] inside = base(self, "print_to_file");
+                                            File file = parseFile(self, inside[0]);
 
                                             FileWriter myWriter = new FileWriter(file);
                                             myWriter.write(parseText(self, inside[1]));

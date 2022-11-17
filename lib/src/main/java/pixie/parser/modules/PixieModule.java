@@ -5,10 +5,13 @@ import pixie.parser.LineParser;
 import pixie.parser.Operable;
 import pixie.parser.SyntaxException;
 import pixie.parser.values.*;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class PixieModule {
+     public Map<String, Class> values = Map.of();
      public Map<String, Operable> variables = Map.of();
      public Map<String, Function> functions = Map.of();
 

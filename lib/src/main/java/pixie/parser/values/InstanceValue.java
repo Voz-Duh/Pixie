@@ -130,7 +130,7 @@ public class InstanceValue implements Operable<Map<String, Operable>> {
      }
 
      public Operable parse(LineParser self, Function function, Operable other) throws SyntaxException {
-          var parser = new LineParser(function.code.code);
+          LineParser parser = new LineParser(function.code.code, currentClass.line);
 
           parser.classes.putAll(self.classes);
 
@@ -153,7 +153,7 @@ public class InstanceValue implements Operable<Map<String, Operable>> {
      }
 
      public Operable parse(LineParser self, Function function) throws SyntaxException {
-          var parser = new LineParser(function.code.code);
+          LineParser parser = new LineParser(function.code.code, currentClass.line);
 
           parser.classes.putAll(self.classes);
 
@@ -175,12 +175,12 @@ public class InstanceValue implements Operable<Map<String, Operable>> {
      }
 
      public Operable parse(LineParser self, String name, Function function) throws SyntaxException {
-          var parser = new LineParser(function.code.code);
+          LineParser parser = new LineParser(function.code.code, currentClass.line);
 
-          var inside = self.getInsideBrackets(self.getNextString(0, self.line, List.of(name))[0].length() + name.length(), self.line).split(",");
+          String[] inside = self.split(self.getInsideBrackets(self.getNextString(0, self.line, List.of(name))[0].length() + name.length(), self.line), ',');
           int val = 0;
-          for (var i : inside) {
-               var parsed = self.parseValue(LineParser.removeWhitespaces(function.arguments[val]), i);
+          for (String i : inside) {
+               LineParser.Value parsed = self.parseValue(LineParser.removeWhitespaces(function.arguments[val]), i);
                parser.variables.put(parsed.name, parsed.value);
                val++;
           }

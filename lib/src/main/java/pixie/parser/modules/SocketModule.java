@@ -16,13 +16,17 @@ import java.util.Map;
 
 public class SocketModule extends PixieModule {
      public SocketModule() {
-          variables = Map.ofEntries();
+
+          values = Map.ofEntries(
+                  Map.entry("socket", SocketValue.class),
+                  Map.entry("server", ServerSocketValue.class)
+          );
           functions = Map.ofEntries(
                   Map.entry("create_socket",
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "create_socket");
+                                            String inside = one(self, "create_socket");
 
                                             Socket socket;
                                             if (!LineParser.removeWhitespaces(inside).equals(""))
@@ -58,7 +62,7 @@ public class SocketModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = base(self, "server_accept");
+                                            String[] inside = base(self, "server_accept");
 
                                             Socket s = parseServer(self, inside[0]).accept();
                                             parseInst(self, inside[1]).put(s.getRemoteSocketAddress().toString(), new SocketValue(s));
@@ -75,10 +79,10 @@ public class SocketModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = base(self, "server_send");
+                                            String[] inside = base(self, "server_send");
 
-                                            var sockets = parseInst(self, inside[0]);
-                                            for (var socket : sockets.values()) {
+                                            Map<String, Operable> sockets = parseInst(self, inside[0]);
+                                            for (Operable socket : sockets.values()) {
                                                  DataOutputStream dout = new DataOutputStream(((SocketValue) socket).get(self).getOutputStream());
                                                  dout.writeUTF(parseText(self, inside[1]));
                                                  dout.flush();
@@ -94,7 +98,7 @@ public class SocketModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = base(self, "socket_send");
+                                            String[] inside = base(self, "socket_send");
 
                                             Socket s = parseSocket(self, inside[0]);
                                             DataOutputStream dout = new DataOutputStream(s.getOutputStream());
@@ -111,7 +115,7 @@ public class SocketModule extends PixieModule {
                           function(
                                   (LineParser self) -> {
                                        try {
-                                            var inside = one(self, "socket_get");
+                                            String inside = one(self, "socket_get");
 
                                             Socket s = parseSocket(self, inside);
                                             DataInputStream din = new DataInputStream(s.getInputStream());
