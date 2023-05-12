@@ -1,8 +1,6 @@
 package pixie.parser;
 
-import pixie.parser.values.BoolValue;
-import pixie.parser.values.NumValue;
-import pixie.parser.values.TextValue;
+import pixie.parser.values.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +44,289 @@ public class MathParser {
           return new LineParser.Value(name, value);
      }
 
+     public static LineParser.Value parseValue(String name, String line, LineParser parser) throws SyntaxException {
+          Operable value = null;
+
+          if (line.contains("(") && line.contains("[") && line.contains("{")) {
+               String[] move = LineParser.removeWhitespaces(LineParser.getInsideBoxBrackets(line)).split(",");
+               String[] args = LineParser.removeWhitespaces(LineParser.getInsideBrackets(line)).split(",");
+               String code = LineParser.getInsideBraces(line);
+               return new LineParser.Value(name, new FunctionValue(code, args, move));
+          }
+
+          if (line.contains("(")) {
+               Function function = parser.function(line.split("\\(")[0].trim());
+               if (!function.code.code.equals("")) {
+                    LineParser.Result p = parser.parse(name, function.code.code);
+                    value = p.value;
+               }
+               else value = function.code.lamda.apply(line, LineParser.words(line), parser);
+          }
+
+          if (line.contains("[")) {
+               Operable variable = parser.variable(line.split("\\[")[0].trim());
+               if (variable instanceof ListValue) {
+                    ((ListValue) variable).value.get((int) ((NumValue) compute(name, LineParser.getInsideBoxBrackets(line), parser).value).value);
+               }
+          }
+
+          return value == null ? parseBaseValue(name, line) : new LineParser.Value(name, value);
+     }
+     /*
+     public Value parseValue(String name, String value) throws SyntaxException {
+          if (value.contains("(") && value.contains("[") && value.contains("{")) {
+               if (removeWhitespaces(value).startsWith("lambda")) {
+                    String[] move = getInside(0, value, '[', ']').split(",");
+                    String[] args = removeWhitespaces(getInsideBracketsFixed(0, value)).split(",");
+                    String code = getInside(0, value, '{', '}').replace("->", "\n");
+                    return new Value(name, new FunctionValue(code, args, move));
+               }
+          }
+
+          boolean isInversed = false;
+          if (removeWhitespaces(value).startsWith("-")) {
+               value = removeWhitespaces(value).substring(1);
+               isInversed = true;
+          }
+
+          List<CharSequence> operators = listOf("&&", "||");
+
+          boolean haveOperation = false;
+          for (CharSequence s : operators) {
+               if (value.contains(s)) {
+                    haveOperation = true;
+                    break;
+               }
+          }
+
+          if (haveOperation) {
+               String[] adds = getNextString(0, value, operators);
+
+               Operable parsedValue = parseValue(name, adds[0]).value;
+               if (isInversed) parsedValue = parsedValue.inv(this);
+
+               switch (adds[2]) {
+                    case "&&":
+                         return new Value(name, parsedValue.and(parseValue(name, adds[1]).value, this));
+                    case "||":
+                         return new Value(name, parsedValue.or(parseValue(name, adds[1]).value, this));
+               }
+          }
+
+          operators = listOf(">=", ">", "<=", "<", "==", "!=");
+
+          haveOperation = false;
+          for (CharSequence s : operators) {
+               if (value.contains(s)) {
+                    haveOperation = true;
+                    break;
+               }
+          }
+
+          if (haveOperation) {
+               String[] adds = getNextString(0, value, operators);
+
+               Operable parsedValue = parseValue(name, adds[0]).value;
+               if (isInversed) parsedValue = parsedValue.inv(this);
+
+
+               switch (adds[2]) {
+                    case ">":
+                         return new Value(name, parsedValue.more(parseValue(name, adds[1]).value, this));
+                    case ">=":
+                         return new Value(name, parsedValue.moreEqu(parseValue(name, adds[1]).value, this));
+                    case "<":
+                         return new Value(name, parsedValue.less(parseValue(name, adds[1]).value, this));
+                    case "<=":
+                         return new Value(name, parsedValue.lessEqu(parseValue(name, adds[1]).value, this));
+                    case "==":
+                         return new Value(name, parsedValue.equals(parseValue(name, adds[1]).value, this));
+                    case "!=":
+                         return new Value(name, parsedValue.notEquals(parseValue(name, adds[1]).value, this));
+               }
+          }
+
+          if (value.contains("**")) {
+               String[] adds = getNextString(0, value, listOf("**"));
+
+               Operable parsedValue = parseValue(name, adds[0]).value;
+               if (isInversed) parsedValue = parsedValue.inv(this);
+
+               return new Value(name, parsedValue.pow(parseValue(name, adds[1]).value, this));
+          }
+
+          operators = listOf("+", "-", "*", "/");
+
+          haveOperation = false;
+          for (CharSequence s : operators) {
+               if (value.contains(s)) {
+                    haveOperation = true;
+                    break;
+               }
+          }
+
+          if (haveOperation) {
+               String[] adds = getNextString(0, value, operators);
+
+               Operable parsedValue = parseValue(name, adds[0]).value;
+               if (isInversed) parsedValue = parsedValue.inv(this);
+
+               switch (adds[2]) {
+                    case "+":
+                         return new Value(name, parsedValue.add(parseValue(name, adds[1]).value, this));
+                    case "-":
+                         return new Value(name, parsedValue.sub(parseValue(name, adds[1]).value, this));
+                    case "*":
+                         return new Value(name, parsedValue.mul(parseValue(name, adds[1]).value, this));
+                    case "/":
+                         return new Value(name, parsedValue.div(parseValue(name, adds[1]).value, this));
+               }
+          }
+
+          if (value.contains("instof")) {
+               String[] adds = getNextString(0, value, listOf("instof"));
+
+               Value parsed = parseValue(name, adds[0]);
+               String cleared = removeWhitespaces(adds[1]);
+               if (values.containsKey(cleared))
+                    return new Value(name, new BoolValue(parsed.value.getClass() == values.get(cleared)));
+               else if (classes.containsKey(cleared) && parsed.value instanceof InstanceValue)
+                    return new Value(name, new BoolValue(((InstanceValue) parsed.value).currentClass.name.equals(cleared)));
+               else
+                    return new Value(name, new BoolValue(parsed.value.getClass() == parseValue(name, adds[1]).value.getClass()));
+          }
+
+          if (removeWhitespaces(value).startsWith("\'")) {
+               String inside = getString(0, value);
+               return new Value(name, new TextValue(inside
+                       .replace("\\\\", "\\")
+                       .replace("\\n", "\n")
+                       .replace("\\'", "'")));
+          }
+
+          if (value.contains("[")) {
+               String[] inside = split(getInside(0, value, '[', ']'), ',');
+               String[] args = removeWhitespaces(value).split("\\[", 2);
+               if (variables.containsKey(args[0])) {
+                    Operable list = variables.get(args[0]);
+                    if (list instanceof ListValue) {
+                         return new Value(name, ((ListValue) list).value.get(((Float) parseValue("", inside[0]).value.get(this)).intValue()));
+                    }
+               } else {
+                    ListValue list = new ListValue();
+                    if (!(inside.length == 1 && inside[0].equals("")))
+                         for (String item : inside) {
+                              list.value.add(parseValue("", item).value);
+                         }
+                    return new Value(name, list);
+               }
+          }
+
+          if (removeWhitespaces(value).startsWith("init")) {
+               int length = getNextString(0, value, listOf("init"))[0].length();
+               int classlength = getNextString(0, value, listOf("("))[0].length();
+               String currentClass = removeWhitespaces(value.substring(length + 4, classlength));
+
+               InstanceValue inst = new InstanceValue();
+               if (classes.containsKey(currentClass) && classes.get(currentClass).functions.containsKey("@init")) {
+                    inst = new InstanceValue(classes.get(currentClass));
+                    String inside = getInsideBrackets(getNextString(0, value, listOf(currentClass))[0].length() + currentClass.length(), value);
+                    String[] splited = split(inside, ',');
+
+                    Function function = classes.get(currentClass).functions.get("@init");
+                    for (int i = 0; i < function.arguments.length; i++) {
+                         if (classes.get(currentClass).variables.containsKey(removeWhitespaces(function.arguments[i])))
+                              inst.variables.put(removeWhitespaces(function.arguments[i]), parseValue("", splited[i]).value);
+                    }
+
+                    inst.parse(this, function);
+               } else {
+                    String inside = getInsideBrackets(length + "init".length(), value);
+                    for (String i : split(inside, ',')) {
+                         String[] _var = i.split(":", 2);
+
+                         Value parsed = parseValue(removeWhitespaces(_var[0]), _var[1]);
+                         inst.variables.put(parsed.name, parsed.value);
+                    }
+               }
+
+               return new Value(name, inst);
+          }
+
+          if (value.contains("(")) {
+               String current = getNextString(0, removeWhitespaces(value), listOf("("))[0];
+
+               if (haveVariable(current)) {
+                    Value variable = new Value(name, variables.get(current));
+                    if (variable.value instanceof InstanceValue) {
+                         String inside = getInsideBrackets(getNextString(0, value, listOf(current))[0].length() + current.length(), value);
+
+                         variable.value = ((InstanceValue) variable.value).get(this).get(removeWhitespaces(inside));
+                    }
+                    if (variable.value instanceof FunctionValue) {
+                         FunctionValue fun = ((FunctionValue) variable.value);
+                         Value[] movables = new Value[fun.movables.length + fun.arguments.length];
+
+                         for (int i = 0; i < fun.movables.length; i++)
+                              movables[i] = new Value(fun.movables[i], variables.get(fun.movables[i]));
+
+                         String[] inside = split(getInsideBrackets(0, value), ',');
+                         for (int i = 0; i < fun.arguments.length; i++) {
+                              Value parsed = parseValue(fun.arguments[i], inside[i]);
+                              movables[fun.movables.length + i] = new Value(parsed.name, parsed.value);
+                         }
+
+                         return new Value(name, parse(fun.value, movables).value);
+                    }
+                    return variable;
+               }
+
+               if (haveFunction(current)) {
+                    Function fun = functions.get(current);
+                    if (!fun.code.code.equals("")) return new Value(name, parse(current, fun.code.code).value);
+                    else return new Value(name, fun.code.lamda.apply(this));
+               }
+
+               String[] splited = current.split("\\.", 2);
+               InstanceValue variable = ((InstanceValue) variables.get(splited[0]));
+               if (variables.containsKey(splited[0]) && variable.functions.containsKey(splited[1])) {
+                    Function fun = variable.functions.get(splited[1]);
+                    if (!fun.code.code.equals("")) return new Value(name, variable.parse(this, current, fun));
+                    else return new Value(name, fun.code.lamda.apply(this));
+               }
+
+               if (classes.containsKey(splited[0]) && classes.get(splited[0]).staticFunctions.containsKey(splited[1])) {
+                    Function fun = classes.get(splited[0]).staticFunctions.get(splited[1]);
+                    if (!fun.code.code.equals("")) return new Value(name, parse(current, splited[0], fun).value);
+                    else return new Value(name, fun.code.lamda.apply(this));
+               }
+          } else {
+               String current = removeWhitespaces(value);
+               if (haveVariable(current)) {
+                    return new Value(name, variables.get(current));
+               }
+
+               String[] splited = current.split("\\.", 2);
+               InstanceValue variable = ((InstanceValue) variables.get(splited[0]));
+               if (variables.containsKey(splited[0]) && variable.variables.containsKey(splited[1])) {
+                    return new Value(name, variable.variables.get(splited[1]));
+               }
+
+               if (classes.containsKey(splited[0]) && classes.get(splited[0]).staticVariables.containsKey(splited[1])) {
+                    return new Value(name, classes.get(splited[0]).staticVariables.get(splited[1]));
+               }
+          }
+
+          String nsValue = removeWhitespaces(value);
+          if (nsValue.startsWith("!")) {
+               String removeValue = nsValue.substring(1);
+               if (haveVariable(removeValue) && variables.get(removeValue) instanceof InstanceValue)
+                    return new Value(name, variables.get(removeValue).inv(this));
+               else return new Value(name, parseBaseValue(name, removeValue).value.inv(this));
+          } else return parseBaseValue(name, nsValue);
+     }
+      */
+
      /**
       * Performs the Shunting Yard algorithm
       *
@@ -72,7 +353,7 @@ public class MathParser {
           }
 
           //read the expression and check if it contains only allowed token
-          Pattern pattern = Pattern.compile("(([0-9]*[.])?[0-9]+)|(==|<=|>=|[\\+\\-\\*\\/\\(\\)\\^\\%\\>\\<])");
+          Pattern pattern = Pattern.compile("\\[[^\\[\\]]*\\]\\s*\\([^()]*\\)\\s*\\{[^{}]*\\}|\\s*\\w+\\s*\\([^()]*\\)|\\s*\\w+\\s*\\[[^\\[\\]]*\\]|(([0-9]*[.])?[0-9]+)|(==|<=|>=|[\\+\\-\\*\\/\\(\\)\\^\\%\\>\\<])/");
           Matcher matcher = pattern.matcher(expression);
 
           int counter = 0; //must be equal to the index of the end of the last matching group
@@ -87,8 +368,7 @@ public class MathParser {
                counter += tokens.get(tokens.size() - 1).length();//update the counter
           }
           if (counter != expression.length()) {
-               //if the matcher reaches the end of the string, we want to check if the last matching group ends at the end of the expression
-               throw new IllegalArgumentException("Invalid end of expression");
+               return parseValue(name, expression, parser);
           }
 
           //if we are here, it means that all the concatenation of all matching group = whole expression.
@@ -156,7 +436,7 @@ public class MathParser {
                //if the token is not an operator and is a number, try to parse it and push it onto the stack
                if (!operators.containsKey(token) && token.matches("([0-9]*[.])?[0-9]+")) {
                     try {
-                         result.push(parseBaseValue(name, token).value);
+                         result.push(parseValue(name, token, parser).value);
                     } catch (NumberFormatException n) {
                          throw n;
                     }

@@ -188,7 +188,7 @@ public class InstanceValue implements Operable<Map<String, Operable>> {
           String[] inside = self.split(self.getInsideBrackets(self.getNextString(0, self.line, LineParser.listOf(name))[0].length() + name.length(), self.line), ',');
           int val = 0;
           for (String i : inside) {
-               LineParser.Value parsed = self.parseValue(LineParser.removeWhitespaces(function.arguments[val].name), i);
+               LineParser.Value parsed = self.parseValue(LineParser.removeWhitespaces(function.arguments[val]), i);
                parser.variables.put(parsed.name, parsed.value);
                val++;
           }

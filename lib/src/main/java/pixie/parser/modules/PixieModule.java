@@ -15,8 +15,8 @@ public class PixieModule {
      public Map<String, Operable> variables = LineParser.ofEntries();
      public Map<String, Function> functions = LineParser.ofEntries();
 
-     public static Function function(java.util.function.Function<LineParser, Operable> function) {
-          return new Function(new Argument[0], new Function.Code("", function));
+     public static Function function(Function.Function3<String, String[], LineParser, Operable> function) {
+          return new Function(new String[0], new Function.Code("", function));
      }
 
      public static String[] base(LineParser self, String name) throws SyntaxException {

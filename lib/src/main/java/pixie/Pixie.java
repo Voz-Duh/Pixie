@@ -1,19 +1,12 @@
 package pixie;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.jar.JarFile;
-
-import pixie.parser.*;
+import pixie.parser.LineParser;
+import pixie.parser.SyntaxException;
 import pixie.parser.modules.PixieModule;
 
-import javax.sound.sampled.Line;
-import javax.swing.*;
-import javax.swing.text.JTextComponent;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 
 public class Pixie {
      public static LineParser parser;
@@ -47,7 +40,8 @@ public class Pixie {
      public static void executeResource(String path, Class importer) throws Exception {
           execute(importer.getClassLoader().getResource(path).getPath());
      }
-/*
+
+     /*
      public static void main(String[] args) throws Exception {
           if (args.length != 0) {
                execute(args[0]);
@@ -76,22 +70,22 @@ public class Pixie {
                        @Override
                        public void actionPerformed(ActionEvent e) {
                             Thread thread = new Thread(() -> {
-                                         try {
-                                              execute(textField.getText());
-                                         } catch (Exception exception) {
-                                              if (exception.getMessage().equals("end")) System.exit(0);
-                                              JOptionPane.showMessageDialog(null, exception.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                                         }
-                                    });
+                                 try {
+                                      execute(textField.getText());
+                                 } catch (Exception exception) {
+                                      if (exception.getMessage().equals("end")) System.exit(0);
+                                      JOptionPane.showMessageDialog(null, exception.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                                 }
+                            });
                             thread.start();
                        }
                   }
           );
 
-          JPanel text = new JPanel(){
+          JPanel text = new JPanel() {
                @Override
                public void paint(Graphics g) {
-                    Graphics2D g2 = (Graphics2D)g;
+                    Graphics2D g2 = (Graphics2D) g;
                     g2.setRenderingHint(
                             RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -109,8 +103,9 @@ public class Pixie {
 
           frame.setResizable(false);
      }
-*/
+      */
+
      public static void main(String[] args) throws Exception {
-          executeCode("print(1 + 3 * 2)");
+          execute("D:\\TEST_TOKEN_CODE.pixie");
      }
 }

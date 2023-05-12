@@ -7,11 +7,11 @@ import pixie.parser.SyntaxException;
 import static pixie.parser.values.NullValue.*;
 
 public class FunctionValue implements Operable<String> {
-     public Argument[] arguments;
+     public String[] arguments;
      public String[] movables;
      public String value;
 
-     public FunctionValue(String code, Argument[] arguments, String[] movables) {
+     public FunctionValue(String code, String[] arguments, String[] movables) {
           value = code;
           this.arguments = arguments;
           this.movables = movables;
