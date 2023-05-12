@@ -5,6 +5,8 @@ import pixie.parser.LineParser;
 import pixie.parser.Operable;
 import pixie.parser.SyntaxException;
 
+import static pixie.parser.values.NullValue.*;
+
 public class NumValue implements Operable<Float> {
      public float value;
 
@@ -25,7 +27,7 @@ public class NumValue implements Operable<Float> {
           if (getter instanceof String)
                return new TextValue(String.valueOf(value) + getter);
 
-          throw new SyntaxException("Number value not support '+' operator");
+          throw addExc(this, other);
      }
 
      @Override
@@ -34,7 +36,7 @@ public class NumValue implements Operable<Float> {
           if (getter instanceof Float)
                return new NumValue(value - (Float) getter);
 
-          throw new SyntaxException("Number value not support '-' operator");
+          throw subExc(this, other);
      }
 
      @Override
@@ -43,7 +45,7 @@ public class NumValue implements Operable<Float> {
           if (getter instanceof Float)
                return new NumValue(value * (Float) getter);
 
-          throw new SyntaxException("Number value not support '*' operator");
+          throw mulExc(this, other);
      }
 
      @Override
@@ -52,7 +54,7 @@ public class NumValue implements Operable<Float> {
           if (getter instanceof Float)
                return new NumValue(value / (Float) getter);
 
-          throw new SyntaxException("Number value not support '/' operator");
+          throw divExc(this, other);
      }
 
      @Override
@@ -61,17 +63,26 @@ public class NumValue implements Operable<Float> {
           if (getter instanceof Float)
                return new NumValue((float) Math.pow(value, (Float) getter));
 
-          throw new SyntaxException("Number value not support '**' operator");
+          throw powExc(this, other);
      }
 
      @Override
-     public Operable and(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Number value not support '&&' operator");
+     public Operable mod(Operable other, LineParser parser) throws SyntaxException {
+          Object getter = other.get(parser);
+          if (getter instanceof Float)
+               return new NumValue(value % (Float) getter);
+
+          throw modExc(this, other);
      }
 
      @Override
-     public Operable or(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Number value not support '||' operator");
+     public NullValue and(Operable other, LineParser parser) throws SyntaxException {
+          throw andExc(this, other);
+     }
+
+     @Override
+     public NullValue or(Operable other, LineParser parser) throws SyntaxException {
+          throw orExc(this, other);
      }
 
      @Override
@@ -80,7 +91,7 @@ public class NumValue implements Operable<Float> {
           if (getter instanceof Float)
                return new BoolValue(value > (Float) getter);
 
-          throw new SyntaxException("Number value not support '>' operator");
+          throw moreExc(this, other);
      }
 
      @Override
@@ -89,7 +100,7 @@ public class NumValue implements Operable<Float> {
           if (getter instanceof Float)
                return new BoolValue(value < (Float) getter);
 
-          throw new SyntaxException("Number value not support '<' operator");
+          throw lessExc(this, other);
      }
 
      @Override
@@ -98,7 +109,7 @@ public class NumValue implements Operable<Float> {
           if (getter instanceof Float)
                return new BoolValue(value >= (Float) getter);
 
-          throw new SyntaxException("Number value not support '>=' operator");
+          throw moreEquExc(this, other);
      }
 
      @Override
@@ -107,7 +118,7 @@ public class NumValue implements Operable<Float> {
           if (getter instanceof Float)
                return new BoolValue(value <= (Float) getter);
 
-          throw new SyntaxException("Number value not support '<=' operator");
+          throw lessEquExc(this, other);
      }
 
      @Override
@@ -116,7 +127,7 @@ public class NumValue implements Operable<Float> {
           if (getter instanceof Float)
                return new BoolValue(value == (Float) getter);
 
-          throw new SyntaxException("Number value not support '==' operator");
+          throw equalsExc(this, other);
      }
 
      @Override
@@ -125,11 +136,11 @@ public class NumValue implements Operable<Float> {
           if (getter instanceof Float)
                return new BoolValue(value != (Float) getter);
 
-          throw new SyntaxException("Number value not support '!=' operator");
+          throw notEqualsExc(this, other);
      }
 
      @Override
-     public Operable inv(LineParser parser) {
-          return new NumValue(-value);
+     public NullValue inv(LineParser parser) throws SyntaxException {
+          throw invExc(this);
      }
 }

@@ -7,6 +7,8 @@ import pixie.parser.SyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static pixie.parser.values.NullValue.*;
+
 public class ListValue implements Operable<List<Operable>> {
      public List<Operable> value;
 
@@ -26,67 +28,72 @@ public class ListValue implements Operable<List<Operable>> {
      }
 
      @Override
-     public Operable sub(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("List value not support '-' operator");
+     public NullValue sub(Operable other, LineParser parser) throws SyntaxException {
+          throw subExc(this, other);
      }
 
      @Override
-     public Operable mul(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("List value not support '*' operator");
+     public NullValue mul(Operable other, LineParser parser) throws SyntaxException {
+          throw mulExc(this, other);
      }
 
      @Override
-     public Operable div(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("List value not support '/' operator");
+     public NullValue div(Operable other, LineParser parser) throws SyntaxException {
+          throw divExc(this, other);
      }
 
      @Override
      public Operable pow(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("List value not support '**' operator");
+          throw powExc(this, other);
      }
 
      @Override
-     public Operable and(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("List value not support '&&' operator");
+     public Operable mod(Operable other, LineParser parser) throws SyntaxException {
+          throw modExc(this, other);
      }
 
      @Override
-     public Operable or(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("List value not support '||' operator");
+     public NullValue and(Operable other, LineParser parser) throws SyntaxException {
+          throw andExc(this, other);
+     }
+
+     @Override
+     public NullValue or(Operable other, LineParser parser) throws SyntaxException {
+          throw orExc(this, other);
      }
 
      @Override
      public BoolValue more(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("List value not support '>' operator");
+          throw moreExc(this, other);
      }
 
      @Override
      public BoolValue less(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("List value not support '<' operator");
+          throw lessExc(this, other);
      }
 
      @Override
      public BoolValue moreEqu(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("List value not support '>=' operator");
+          throw moreEquExc(this, other);
      }
 
      @Override
      public BoolValue lessEqu(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("List value not support '<=' operator");
+          throw lessEquExc(this, other);
      }
 
      @Override
      public BoolValue equals(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("List value not support '==' operator");
+          throw equalsExc(this, other);
      }
 
      @Override
      public BoolValue notEquals(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("List value not support '!=' operator");
+          throw notEqualsExc(this, other);
      }
 
      @Override
-     public Operable inv(LineParser parser) throws SyntaxException {
-          throw new SyntaxException("List value not support '!' operator");
+     public NullValue inv(LineParser parser) throws SyntaxException {
+          throw invExc(this);
      }
 }

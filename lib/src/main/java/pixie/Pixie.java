@@ -23,6 +23,11 @@ public class Pixie {
           LineParser.modules.put(name, module);
      }
 
+     public static void executeCode(String code) throws Exception {
+          parser = new LineParser(code, 0);
+          parser.parse();
+     }
+
      public static void execute(String path) throws Exception {
           if (!path.endsWith("." + LineParser.executableType))
                throw new Exception("Pixie cannot execute not ." + LineParser.executableType);
@@ -42,7 +47,7 @@ public class Pixie {
      public static void executeResource(String path, Class importer) throws Exception {
           execute(importer.getClassLoader().getResource(path).getPath());
      }
-
+/*
      public static void main(String[] args) throws Exception {
           if (args.length != 0) {
                execute(args[0]);
@@ -103,5 +108,9 @@ public class Pixie {
 
 
           frame.setResizable(false);
+     }
+*/
+     public static void main(String[] args) throws Exception {
+          executeCode("print(1 + 3 * 2)");
      }
 }

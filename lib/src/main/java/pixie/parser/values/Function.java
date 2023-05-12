@@ -4,10 +4,10 @@ import pixie.parser.LineParser;
 import pixie.parser.Operable;
 
 public class Function {
-     public String[] arguments;
+     public Argument[] arguments;
      public Code code;
 
-     public Function(String[] arguments, Code code) {
+     public Function(Argument[] arguments, Code code) {
           this.arguments = arguments;
           this.code = code;
      }

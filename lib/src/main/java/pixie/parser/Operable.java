@@ -9,6 +9,7 @@ public interface Operable<V> {
      Operable mul(Operable other, LineParser parser) throws SyntaxException;
      Operable div(Operable other, LineParser parser) throws SyntaxException;
      Operable pow(Operable other, LineParser parser) throws SyntaxException;
+     Operable mod(Operable other, LineParser parser) throws SyntaxException;
      Operable and(Operable other, LineParser parser) throws SyntaxException;
      Operable or(Operable other, LineParser parser) throws SyntaxException;
      BoolValue more(Operable other, LineParser parser) throws SyntaxException;

@@ -5,6 +5,7 @@ import pixie.parser.Operable;
 import pixie.parser.SyntaxException;
 import pixie.parser.values.BoolValue;
 import pixie.parser.values.InstanceValue;
+import pixie.parser.values.NullValue;
 import pixie.parser.values.TextValue;
 
 import java.io.DataInputStream;
@@ -13,6 +14,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Map;
+
+import static pixie.parser.values.NullValue.*;
 
 public class SocketModule extends PixieModule {
      public SocketModule() {
@@ -147,73 +150,78 @@ public class SocketModule extends PixieModule {
           }
 
           @Override
-          public Operable add(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '+' operator");
+          public NullValue add(Operable other, LineParser parser) throws SyntaxException {
+               throw addExc(this, other);
           }
 
           @Override
-          public Operable sub(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '-' operator");
+          public NullValue sub(Operable other, LineParser parser) throws SyntaxException {
+               throw subExc(this, other);
           }
 
           @Override
-          public Operable mul(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '*' operator");
+          public NullValue mul(Operable other, LineParser parser) throws SyntaxException {
+               throw mulExc(this, other);
           }
 
           @Override
-          public Operable div(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '/' operator");
+          public NullValue div(Operable other, LineParser parser) throws SyntaxException {
+               throw divExc(this, other);
           }
 
           @Override
           public Operable pow(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '**' operator");
+               throw powExc(this, other);
           }
 
           @Override
-          public Operable and(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '&&' operator");
+          public Operable mod(Operable other, LineParser parser) throws SyntaxException {
+               throw modExc(this, other);
           }
 
           @Override
-          public Operable or(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '||' operator");
+          public NullValue and(Operable other, LineParser parser) throws SyntaxException {
+               throw andExc(this, other);
+          }
+
+          @Override
+          public NullValue or(Operable other, LineParser parser) throws SyntaxException {
+               throw orExc(this, other);
           }
 
           @Override
           public BoolValue more(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '>' operator");
+               throw moreExc(this, other);
           }
 
           @Override
           public BoolValue less(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '<' operator");
+               throw lessExc(this, other);
           }
 
           @Override
           public BoolValue moreEqu(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '>=' operator");
+               throw moreEquExc(this, other);
           }
 
           @Override
           public BoolValue lessEqu(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '<=' operator");
+               throw lessEquExc(this, other);
           }
 
           @Override
           public BoolValue equals(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '==' operator");
+               throw equalsExc(this, other);
           }
 
           @Override
           public BoolValue notEquals(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '!=' operator");
+               throw notEqualsExc(this, other);
           }
 
           @Override
-          public Operable inv(LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '!' operator");
+          public NullValue inv(LineParser parser) throws SyntaxException {
+               throw invExc(this);
           }
      }
 
@@ -235,73 +243,78 @@ public class SocketModule extends PixieModule {
           }
 
           @Override
-          public Operable add(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '+' operator");
+          public NullValue add(Operable other, LineParser parser) throws SyntaxException {
+               throw addExc(this, other);
           }
 
           @Override
-          public Operable sub(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '-' operator");
+          public NullValue sub(Operable other, LineParser parser) throws SyntaxException {
+               throw subExc(this, other);
           }
 
           @Override
-          public Operable mul(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '*' operator");
+          public NullValue mul(Operable other, LineParser parser) throws SyntaxException {
+               throw mulExc(this, other);
           }
 
           @Override
-          public Operable div(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '/' operator");
+          public NullValue div(Operable other, LineParser parser) throws SyntaxException {
+               throw divExc(this, other);
           }
 
           @Override
           public Operable pow(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '**' operator");
+               throw powExc(this, other);
           }
 
           @Override
-          public Operable and(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '&&' operator");
+          public Operable mod(Operable other, LineParser parser) throws SyntaxException {
+               throw modExc(this, other);
           }
 
           @Override
-          public Operable or(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '||' operator");
+          public NullValue and(Operable other, LineParser parser) throws SyntaxException {
+               throw andExc(this, other);
+          }
+
+          @Override
+          public NullValue or(Operable other, LineParser parser) throws SyntaxException {
+               throw orExc(this, other);
           }
 
           @Override
           public BoolValue more(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '>' operator");
+               throw moreExc(this, other);
           }
 
           @Override
           public BoolValue less(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '<' operator");
+               throw lessExc(this, other);
           }
 
           @Override
           public BoolValue moreEqu(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '>=' operator");
+               throw moreEquExc(this, other);
           }
 
           @Override
           public BoolValue lessEqu(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '<=' operator");
+               throw lessEquExc(this, other);
           }
 
           @Override
           public BoolValue equals(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '==' operator");
+               throw equalsExc(this, other);
           }
 
           @Override
           public BoolValue notEquals(Operable other, LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '!=' operator");
+               throw notEqualsExc(this, other);
           }
 
           @Override
-          public Operable inv(LineParser parser) throws SyntaxException {
-               throw new SyntaxException("Instance value not support '!' operator");
+          public NullValue inv(LineParser parser) throws SyntaxException {
+               throw invExc(this);
           }
      }
 }

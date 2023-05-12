@@ -5,6 +5,8 @@ import pixie.parser.LineParser;
 import pixie.parser.Operable;
 import pixie.parser.SyntaxException;
 
+import static pixie.parser.values.NullValue.*;
+
 public class BoolValue implements Operable<Boolean> {
      public boolean value;
 
@@ -23,27 +25,32 @@ public class BoolValue implements Operable<Boolean> {
           if (getter instanceof String)
                return new TextValue(String.valueOf(value) + getter);
 
-          throw new SyntaxException("Bool value not support '+' operator");
+          throw NullValue.addExc(this, other);
      }
 
      @Override
-     public Operable sub(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Bool value not support '-' operator");
+     public NullValue sub(Operable other, LineParser parser) throws SyntaxException {
+          throw subExc(this, other);
      }
 
      @Override
-     public Operable mul(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Bool value not support '*' operator");
+     public NullValue mul(Operable other, LineParser parser) throws SyntaxException {
+          throw mulExc(this, other);
      }
 
      @Override
-     public Operable div(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Bool value not support '/' operator");
+     public NullValue div(Operable other, LineParser parser) throws SyntaxException {
+          throw divExc(this, other);
      }
 
      @Override
      public Operable pow(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Bool value not support '**' operator");
+          throw powExc(this, other);
+     }
+
+     @Override
+     public Operable mod(Operable other, LineParser parser) throws SyntaxException {
+          throw modExc(this, other);
      }
 
      @Override
@@ -52,7 +59,7 @@ public class BoolValue implements Operable<Boolean> {
           if (getter instanceof Boolean)
                return new BoolValue(value && (Boolean) getter);
 
-          throw new SyntaxException("Bool value not support '&&' operator");
+          throw NullValue.addExc(this, other);
      }
 
      @Override
@@ -61,27 +68,27 @@ public class BoolValue implements Operable<Boolean> {
           if (getter instanceof Boolean)
                return new BoolValue(value || (Boolean) getter);
 
-          throw new SyntaxException("Bool value not support '||' operator");
+          throw NullValue.orExc(this, other);
      }
 
      @Override
      public BoolValue more(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Bool value not support '>' operator");
+          throw NullValue.moreExc(this, other);
      }
 
      @Override
      public BoolValue less(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Bool value not support '<' operator");
+          throw NullValue.lessExc(this, other);
      }
 
      @Override
      public BoolValue moreEqu(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Bool value not support '>=' operator");
+          throw NullValue.moreExc(this, other);
      }
 
      @Override
      public BoolValue lessEqu(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Bool value not support '<=' operator");
+          throw NullValue.lessEquExc(this, other);
      }
 
      @Override
@@ -90,7 +97,7 @@ public class BoolValue implements Operable<Boolean> {
           if (getter instanceof Boolean)
                return new BoolValue(value == (Boolean) getter);
 
-          throw new SyntaxException("Bool value not support '==' operator");
+          throw NullValue.equalsExc(this, other);
      }
 
      @Override
@@ -99,7 +106,7 @@ public class BoolValue implements Operable<Boolean> {
           if (getter instanceof Boolean)
                return new BoolValue(value != (Boolean) getter);
 
-          throw new SyntaxException("Bool value not support '!=' operator");
+          throw NullValue.notEqualsExc(this, other);
      }
 
      @Override

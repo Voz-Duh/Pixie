@@ -4,6 +4,8 @@ import pixie.parser.LineParser;
 import pixie.parser.Operable;
 import pixie.parser.SyntaxException;
 
+import static pixie.parser.values.NullValue.*;
+
 public class TextValue implements Operable<String> {
      public String value;
 
@@ -22,53 +24,58 @@ public class TextValue implements Operable<String> {
      }
 
      @Override
-     public Operable sub(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Text value not support '-' operator");
+     public NullValue sub(Operable other, LineParser parser) throws SyntaxException {
+          throw subExc(this, other);
      }
 
      @Override
-     public Operable mul(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Text value not support '*' operator");
+     public NullValue mul(Operable other, LineParser parser) throws SyntaxException {
+          throw mulExc(this, other);
      }
 
      @Override
-     public Operable div(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Text value not support '/' operator");
+     public NullValue div(Operable other, LineParser parser) throws SyntaxException {
+          throw divExc(this, other);
      }
 
      @Override
      public Operable pow(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Text value not support '**' operator");
+          throw powExc(this, other);
      }
 
      @Override
-     public Operable and(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Text value not support '&&' operator");
+     public Operable mod(Operable other, LineParser parser) throws SyntaxException {
+          throw modExc(this, other);
      }
 
      @Override
-     public Operable or(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Text value not support '||' operator");
+     public NullValue and(Operable other, LineParser parser) throws SyntaxException {
+          throw andExc(this, other);
+     }
+
+     @Override
+     public NullValue or(Operable other, LineParser parser) throws SyntaxException {
+          throw orExc(this, other);
      }
 
      @Override
      public BoolValue more(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Text value not support '>' operator");
+          throw moreExc(this, other);
      }
 
      @Override
      public BoolValue less(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Text value not support '<' operator");
+          throw lessExc(this, other);
      }
 
      @Override
      public BoolValue moreEqu(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Text value not support '>=' operator");
+          throw moreEquExc(this, other);
      }
 
      @Override
      public BoolValue lessEqu(Operable other, LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Text value not support '<=' operator");
+          throw lessEquExc(this, other);
      }
 
      @Override
@@ -83,6 +90,6 @@ public class TextValue implements Operable<String> {
 
      @Override
      public Operable inv(LineParser parser) throws SyntaxException {
-          throw new SyntaxException("Text value not support '!' operator");
+          throw NullValue.invExc(this);
      }
 }
