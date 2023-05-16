@@ -15,16 +15,13 @@ public class PixieModule {
      public Map<String, Operable> variables = LineParser.ofEntries();
      public Map<String, Function> functions = LineParser.ofEntries();
 
-     public static Function function(Function.Function3<String, String[], LineParser, Operable> function) {
-          return new Function(new String[0], new Function.Code("", function));
+     public static Map.Entry function(String name, int args, Function.Function3<String, String[], LineParser, Operable> function) {
+          return LineParser.entry(name + args, new Function(new String[0], new Function.Code("", function)));
      }
 
-     public static String[] base(LineParser self, String name) throws SyntaxException {
-          return self.getInsideBrackets(self.getNextString(0, self.line, LineParser.listOf(name))[0].length() + name.length(), self.line).split(",");
-     }
-
-     public static String one(LineParser self, String name) throws SyntaxException {
-          return self.getInsideBrackets(self.getNextString(0, self.line, LineParser.listOf(name))[0].length() + name.length(), self.line);
+     public static String[] get(String line, String[] words) throws SyntaxException {
+          line = LineParser.rWord(line, words, 0);
+          return LineParser.getInsideBrackets(line).split(",");
      }
 
      public static float parseNum(LineParser self, String value) throws SyntaxException {

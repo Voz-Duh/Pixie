@@ -4,12 +4,15 @@ import pixie.parser.LineParser;
 import pixie.parser.SyntaxException;
 import pixie.parser.modules.PixieModule;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 
 public class Pixie {
-     public static LineParser parser;
+     public static LineParser parser = null;
      public static String result = "";
 
      public static void addModule(String name, PixieModule module) {
@@ -41,7 +44,6 @@ public class Pixie {
           execute(importer.getClassLoader().getResource(path).getPath());
      }
 
-     /*
      public static void main(String[] args) throws Exception {
           if (args.length != 0) {
                execute(args[0]);
@@ -102,10 +104,5 @@ public class Pixie {
 
 
           frame.setResizable(false);
-     }
-      */
-
-     public static void main(String[] args) throws Exception {
-          execute("D:\\TEST_TOKEN_CODE.pixie");
      }
 }

@@ -25,110 +25,96 @@ public class SocketModule extends PixieModule {
                   LineParser.entry("server", ServerSocketValue.class)
           );
           functions = LineParser.ofEntries(
-                  LineParser.entry("create_socket",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "create_socket");
+                  function("create_socket", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
 
-                                            Socket socket;
-                                            if (!LineParser.removeWhitespaces(inside).equals(""))
-                                                 socket = new Socket(parseText(self, inside), 1869);
-                                            else socket = new Socket("localhost", 1869);
+                                    Socket socket;
+                                    if (!LineParser.removeWhitespaces(inside[0]).equals(""))
+                                         socket = new Socket(parseText(p, inside[0]), 1869);
+                                    else socket = new Socket("localhost", 1869);
 
-                                            return new SocketValue(socket);
-                                       } catch (SyntaxException | IOException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                                    return new SocketValue(socket);
+                               } catch (SyntaxException | IOException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("create_clients",
-                          function(
-                                  (LineParser self) -> new InstanceValue()
-                          )
+                  function("create_clients", 0,
+                          (String line, String[] words, LineParser p) -> new InstanceValue()
                   ),
-                  LineParser.entry("create_server",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            return new ServerSocketValue(new ServerSocket(1869));
-                                       } catch (IOException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("create_server", 0,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    return new ServerSocketValue(new ServerSocket(1869));
+                               } catch (IOException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("server_accept",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String[] inside = base(self, "server_accept");
+                  function("server_accept", 2,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
 
-                                            Socket s = parseServer(self, inside[0]).accept();
-                                            parseInst(self, inside[1]).put(s.getRemoteSocketAddress().toString(), new SocketValue(s));
-                                            DataInputStream dis = new DataInputStream(s.getInputStream());
-                                            return new TextValue(dis.readUTF());
-                                       } catch (IOException | SyntaxException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                                    Socket s = parseServer(p, inside[0]).accept();
+                                    parseInst(p, inside[1]).put(s.getRemoteSocketAddress().toString(), new SocketValue(s));
+                                    DataInputStream dis = new DataInputStream(s.getInputStream());
+                                    return new TextValue(dis.readUTF());
+                               } catch (IOException | SyntaxException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("server_send",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String[] inside = base(self, "server_send");
+                  function("server_send", 2,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
 
-                                            Map<String, Operable> sockets = parseInst(self, inside[0]);
-                                            for (Operable socket : sockets.values()) {
-                                                 DataOutputStream dout = new DataOutputStream(((SocketValue) socket).get(self).getOutputStream());
-                                                 dout.writeUTF(parseText(self, inside[1]));
-                                                 dout.flush();
-                                            }
-                                       } catch (IOException | SyntaxException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                                    Map<String, Operable> sockets = parseInst(p, inside[0]);
+                                    for (Operable socket : sockets.values()) {
+                                         DataOutputStream dout = new DataOutputStream(((SocketValue) socket).get(p).getOutputStream());
+                                         dout.writeUTF(parseText(p, inside[1]));
+                                         dout.flush();
+                                    }
+                               } catch (IOException | SyntaxException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("socket_send",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String[] inside = base(self, "socket_send");
+                  function("socket_send", 2,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
 
-                                            Socket s = parseSocket(self, inside[0]);
-                                            DataOutputStream dout = new DataOutputStream(s.getOutputStream());
-                                            dout.writeUTF(parseText(self, inside[1]));
-                                            dout.flush();
-                                       } catch (IOException | SyntaxException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                                    Socket s = parseSocket(p, inside[0]);
+                                    DataOutputStream dout = new DataOutputStream(s.getOutputStream());
+                                    dout.writeUTF(parseText(p, inside[1]));
+                                    dout.flush();
+                               } catch (IOException | SyntaxException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("socket_get",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "socket_get");
+                  function("socket_get", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
 
-                                            Socket s = parseSocket(self, inside);
-                                            DataInputStream din = new DataInputStream(s.getInputStream());
-                                            return new TextValue(din.readUTF());
-                                       } catch (IOException | SyntaxException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                                    Socket s = parseSocket(p, inside[0]);
+                                    DataInputStream din = new DataInputStream(s.getInputStream());
+                                    return new TextValue(din.readUTF());
+                               } catch (IOException | SyntaxException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
                   )
           );
      }

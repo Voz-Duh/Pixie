@@ -10,7 +10,7 @@ import static pixie.parser.values.NullValue.*;
 public class NumValue implements Operable<Float> {
      public float value;
 
-     public NumValue(float value){
+     public NumValue(float value) {
           this.value = value;
      }
 

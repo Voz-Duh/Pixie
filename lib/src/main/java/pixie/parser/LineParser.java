@@ -7,10 +7,8 @@ import pixie.parser.modules.SocketModule;
 import pixie.parser.values.*;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class LineParser {
+public class LineParser implements VariableContainer {
      public int executorLine;
      public final static String executableType = "pixie";
      public final static Scanner scaner = new Scanner(System.in);
@@ -62,6 +60,7 @@ public class LineParser {
           }
      }
 
+
      public final static Map<String, PixieModule> modules = new HashMap<>(ofEntries(
              entry("math", new MathModule()),
              entry("files", new FileModule()),
@@ -75,218 +74,206 @@ public class LineParser {
              entry("null", NullValue.class),
              entry("lambda", FunctionValue.class)
      ));
-     public final Map<String, Operable> variables = new HashMap<>();
-     public final Map<String, Function> functions = baseFunctions();
+     public Map<String, Operable> variables = new HashMap<>();
+     public Map<String, Function> functions = baseFunctions();
 
      protected final String code;
-     protected String[] lines;
      public String line;
      public int lineIndex = 0;
-     protected int position = 0;
+     public VariableContainer instance = null;
 
      public LineParser(String code, int executorLine) {
           this.code = code;
           this.executorLine = executorLine;
      }
 
-     public void setLine(int lineIndex) {
-          SyntaxException.line = lineIndex;
-          this.lineIndex = lineIndex;
-          this.line = lines[lineIndex];
+     public LineParser(String code, int executorLine, VariableContainer instance) {
+          this.code = code;
+          this.instance = instance;
+          this.executorLine = executorLine;
+
+          VariableContainer _instance = this.instance != null ? this.instance : this;
+
+          variables = _instance.getVar();
+          functions = _instance.getFunc();
      }
 
-     public static void reactElif(boolean last, LineParser self) throws SyntaxException {
-          String name = "elif";
-          String inside = self.getInsideBrackets(getNextString(0, self.line, listOf(name))[0].length() + name.length(), self.line);
-
-          StringBuilder resultCode = new StringBuilder();
-          int end = self.getEnd(self.lineIndex, self.lines);
-          for (int i = self.lineIndex + 1; i < end; i++)
-               resultCode.append(self.lines[i]).append('\n');
-          self.setLine(end);
-
-
-          Object value = self.parseValue("", inside).value.get(self);
-          if (value instanceof Boolean) {
-               if (!last && (Boolean) value) {
-                    Result result = self.parse(resultCode.toString());
-
-                    self.variables.putAll(result.vars);
-                    self.functions.putAll(result.functs);
-               }
-
-               if (self.lineIndex + 1 != self.lines.length) {
-                    if (removeWhitespaces(self.lines[self.lineIndex + 1]).startsWith("elif")) {
-                         self.setLine(self.lineIndex + 1);
-                         reactElif((Boolean) value, self);
-                    }
-                    if (removeWhitespaces(self.lines[self.lineIndex + 1]).startsWith("else")) {
-                         self.setLine(self.lineIndex + 1);
-                         self.reactElse((Boolean) value);
-                    }
-               }
-          } else throw new SyntaxException("Not bool value provided to elif");
+     @Override
+     public Map<String, Operable> getVar() {
+          return variables;
      }
 
-     public void reactElse(boolean last) throws SyntaxException {
-          StringBuilder resultCode = new StringBuilder();
-          int end = getEnd(lineIndex, lines, 0);
-          for (int i = lineIndex + 1; i < end; i++)
-               resultCode.append(lines[i]).append('\n');
-          setLine(end);
-
-
-          if (!last) {
-               Result result = parse(resultCode.toString());
-
-               variables.putAll(result.vars);
-               functions.putAll(result.functs);
-          }
+     @Override
+     public Map<String, Function> getFunc() {
+          return functions;
      }
 
-     public Function function(String value) throws SyntaxException {
-          if (have('.', value))
-          {
-               ClassConstructor _class = null;
-               InstanceValue instance = null;
+     public VariableContainer getInstance(String value) throws SyntaxException {
+          if (value.contains(".")) {
+               VariableContainer instance = this;
 
                String[] values = value.split("\\.");
-               for (int i = 0; i < values.length-1; i++) {
+
+               int i = 0;
+               String start = values[0].trim();
+
+               if (start.equals("this")) {
+                    instance = this.instance;
+                    i = 1;
+               } else if (classes.containsKey(start)) {
+                    instance = classes.get(start);
+                    i = 1;
+               }
+
+               for (; i < values.length - 1; i++) {
                     String s = values[i].trim();
 
-                    if (_class == null && instance == null) {
-                         if (s.equals("this")) {
-                              continue;
-                         }
-
-                         if (classes.containsKey(s)) {
-                              _class = classes.get(s);
-                         }
-
-                         if (variables.containsKey(s)) {
-                              instance = (InstanceValue) variables.get(s);
-                         }
-                    }
-                    else {
-                         if (_class != null) {
-                              instance = (InstanceValue) _class.staticVariables.get(s);
-                              _class = null;
-                         }
-                         else {
-                              try {
-                                   instance = (InstanceValue) instance.variables.get(s);
-                              }
-                              catch (NullPointerException e) {
-                                   throw new SyntaxException("Instance dont have " + s);
-                              }
-                              catch (ClassCastException e) {
-                                   throw new SyntaxException(". after not instance");
-                              }
-                         }
+                    try {
+                         instance = (InstanceValue) instance.getVar().get(s);
+                    } catch (ClassCastException e) {
+                         throw new SyntaxException(". after not instance");
                     }
                }
 
-               String r = values[value.length()-1];
-               if (_class != null) {
-                    if (_class.staticFunctions.containsKey(r))
-                         return _class.staticFunctions.get(r);
+               return instance;
+          }
+          return null;
+     }
+
+     public Function function(String value, String line) throws SyntaxException {
+          String[] args = split(getInsideBrackets(line), ',');
+
+          value += args.length;
+
+          if (value.contains(".")) {
+               VariableContainer instance = this.instance != null ? this.instance : this;
+
+               String[] values = value.split("\\.");
+
+               int i = 0;
+               String start = values[0].trim();
+
+               if (start.equals("this")) {
+                    instance = this.instance;
+                    i = 1;
+               } else if (classes.containsKey(start)) {
+                    instance = classes.get(start);
+                    i = 1;
                }
-               else if (instance.functions.containsKey(r)) {
-                    return instance.functions.get(r);
+
+               for (; i < values.length - 1; i++) {
+                    String s = values[i].trim();
+
+                    try {
+                         instance = (InstanceValue) instance.getVar().get(s);
+                    } catch (ClassCastException e) {
+                         throw new SyntaxException(". after not instance");
+                    }
+               }
+
+               String r = values[values.length - 1];
+               if (instance != null) {
+                    Map<String, Function> functions = instance.getFunc();
+                    if (functions.containsKey(r)) {
+                         return functions.get(r);
+                    }
                }
                return null;
           }
-          return functions.get(value);
+          if (functions.containsKey(value)) return functions.get(value);
+          return null;
      }
 
+     public Operable parseFunction(String value, String line, String[] words) throws SyntaxException {
+          String[] args = split(getInsideBrackets(line), ',');
 
-     public Operable variable(String value) throws SyntaxException {
-          if (have('.', value))
-          {
-               ClassConstructor _class = null;
-               InstanceValue instance = null;
+          value += args.length;
+
+          if (value.contains(".")) {
+               VariableContainer instance = this;
 
                String[] values = value.split("\\.");
-               for (int i = 0; i < values.length-1; i++) {
+
+               int i = 0;
+               String start = values[0].trim();
+
+               if (start.equals("this")) {
+                    instance = this.instance;
+                    i = 1;
+               } else if (classes.containsKey(start)) {
+                    instance = classes.get(start);
+                    i = 1;
+               }
+
+               for (; i < values.length - 1; i++) {
                     String s = values[i].trim();
 
-                    if (_class == null && instance == null) {
-                         if (s.equals("this")) {
-                              continue;
-                         }
-
-                         if (classes.containsKey(s)) {
-                              _class = classes.get(s);
-                         }
-
-                         if (variables.containsKey(s)) {
-                              instance = (InstanceValue) variables.get(s);
-                         }
-                    }
-                    else {
-                         if (_class != null) {
-                              instance = (InstanceValue) _class.staticVariables.get(s);
-                              _class = null;
-                         }
-                         else {
-                              try {
-                                   instance = (InstanceValue) instance.variables.get(s);
-                              }
-                              catch (NullPointerException e) {
-                                   throw new SyntaxException("Instance dont have " + s);
-                              }
-                              catch (ClassCastException e) {
-                                   throw new SyntaxException(". after not instance");
-                              }
-                         }
+                    try {
+                         instance = (InstanceValue) instance.getVar().get(s);
+                    } catch (ClassCastException e) {
+                         throw new SyntaxException(". after not instance");
                     }
                }
 
-               String r = values[value.length()-1];
-               if (_class != null) {
-                    if (_class.staticVariables.containsKey(r))
-                         return _class.staticVariables.get(r);
+               String r = values[values.length - 1];
+               if (instance != null) {
+                    Map<String, Function> functions = instance.getFunc();
+                    if (functions.containsKey(r)) {
+                         return parseInstance(functions.get(r), line, words, instance);
+                    }
                }
-               else if (instance.variables.containsKey(r)) {
-                    return instance.variables.get(r);
+               return null;
+          }
+          if (functions.containsKey(value)) return parseInstance(functions.get(value), line, words, this);
+          return null;
+     }
+
+     public Operable parseInstance(Function function, String line, String[] words, VariableContainer value) throws SyntaxException {
+          if (function != null) {
+               if (!function.code.code.equals("")) return parse(function, line, value).value;
+               else return function.code.lamda.apply(line, words, this);
+          }
+          return new NullValue();
+     }
+
+     public Operable variable(String value) throws SyntaxException {
+          if (value.contains(".")) {
+               VariableContainer instance = this;
+
+               String[] values = value.split("\\.");
+
+               int i = 0;
+               String start = values[0].trim();
+
+               if (start.equals("this")) {
+                    instance = this.instance;
+                    i = 1;
+               } else if (classes.containsKey(start)) {
+                    instance = classes.get(start);
+                    i = 1;
+               }
+
+               for (; i < values.length - 1; i++) {
+                    String s = values[i].trim();
+
+                    try {
+                         instance = (InstanceValue) instance.getVar().get(s);
+                    } catch (ClassCastException e) {
+                         throw new SyntaxException(". after not instance");
+                    }
+               }
+
+               String r = values[values.length - 1];
+               if (instance != null) {
+                    Map<String, Operable> variables = instance.getVar();
+                    if (variables.containsKey(r)) {
+                         return variables.get(r);
+                    }
                }
                return null;
           }
           if (variables.containsKey(value)) return variables.get(value);
           return null;
-     }
-
-     public int getEnd(int from, String[] where) throws SyntaxException {
-          return getEnd(from, where, 0);
-     }
-
-     public int getEnd(int from, String[] where, int inited) throws SyntaxException {
-          return getEnd(from, where, "{", "}", inited, Integer.MAX_VALUE);
-     }
-
-     public int getEnd(int from, String[] where, int inited, int max) throws SyntaxException {
-          return getEnd(from, where, "{", "}", inited, max);
-     }
-
-     public int getEnd(int from, String[] where, String starter, String ender) throws SyntaxException {
-          return getEnd(from, where, starter, ender, 0, Integer.MAX_VALUE);
-     }
-
-     public int getEnd(int from, String[] where, String starter, String ender, int inited, int max) throws SyntaxException {
-          for (int i = from; i < where.length; i++) {
-               if (removeWhitespaces(where[i]).endsWith(starter) || removeWhitespaces(where[i]).startsWith(starter)) {
-                    inited++;
-                    if (inited > max) inited--;
-               }
-               if (removeWhitespaces(where[i]).endsWith(ender) || removeWhitespaces(where[i]).startsWith(ender)) {
-                    inited--;
-               }
-               if (inited == 0) {
-                    return i;
-               }
-          }
-
-          throw new SyntaxException("Missing end '" + ender + "'", from);
      }
 
      public Value parseValue(String name, String value) throws SyntaxException {
@@ -297,272 +284,121 @@ public class LineParser {
           return str.replaceAll(" ", "").replaceAll("\n", "");
      }
 
-     private static final List<Character> splitIgnore = listOf(
-             '(', ')', '[', ']', ':', '{', '}'
-     );
-
-     public static String[] split(String string, char split) {
-          Queue<String> result = new ArrayDeque<>();
-
-          boolean add = true;
-          boolean lastIsBack = false;
-          boolean isString = false;
-          int last = 0;
-          for (int i = 0; i < string.length(); i++) {
-               if (!lastIsBack && string.charAt(i) == '\'') isString = !isString;
-
-               if (!isString) {
-                    if (splitIgnore.contains(string.charAt(i))) {
-                         add = !add;
-                         if (add) last = i + 1;
-                    }
-
-                    if (string.charAt(i) == split) {
-                         if (add) result.add(string.substring(last, i));
-                         last = i + 1;
-                    }
-               }
-
-               lastIsBack = string.charAt(i) == '\\';
+     private static String getAfter(String text, String character) {
+          int index = text.lastIndexOf(character);
+          if (index != -1) {
+               return text.substring(index + character.length());
+          } else {
+               return text;
           }
-
-          result.add(string.substring(last));
-
-          return result.toArray(new String[0]);
      }
 
-     private final List<Character> charOperators = listOf(
-             '(', ')', '[', ']', ':', ',', '{', '}'
-     );
-
-     public static String[] getNextString(int position, String line, List<CharSequence> operators) {
-          String resultArg = "";
-          for (int i = position; i < line.length(); i++) {
-               boolean breakMain = false;
-               for (CharSequence operator : operators) {
-                    if (position + operator.length() >= line.length()) continue;
-                    String arg = line.substring(position, position + operator.length());
-                    if (operator.equals(arg)) {
-                         resultArg = arg;
-                         breakMain = true;
-                         break;
+     public static String getAfter(String text, char start, char end) {
+          int level = 0;
+          boolean insideQuotes = false;
+          for (int i = 0; i < text.length(); i++) {
+               char c = text.charAt(i);
+               if (c == '\"' && (i == 0 || text.charAt(i - 1) != '\\')) {
+                    insideQuotes = !insideQuotes;
+               } else {
+                    if (!insideQuotes && c == start) {
+                         level++;
+                    } else if (!insideQuotes && c == end) {
+                         level--;
+                         if (level == 0) {
+                              return text.substring(i + 1);
+                         }
                     }
                }
-               if (breakMain) break;
-               position++;
           }
-
-          return new String[]{
-                  line.substring(0, Math.max(position, 0)),
-                  line.substring(Math.min(Math.max(position + resultArg.length(), 0), line.length() - 1)),
-                  resultArg
-          };
+          return "";
      }
 
-     public String getInsideBrackets(int position, String line) throws SyntaxException {
-          return getInside(position, line, '(', ')');
-     }
+     public static String[] split(String text, char delimiter) {
+          if (text.trim().equals("")) return new String[0];
 
-     public String getString(int position, String line) throws SyntaxException {
-          int i;
-          int start = -1;
-          boolean lastIsBack = false;
-          for (i = position; i < line.length(); i++) {
-               if (!lastIsBack && line.charAt(i) == '\'') {
-                    start = i + 1;
-                    break;
+          List<String> parts = new ArrayList<>();
+          int level = 0;
+          boolean insideQuotes = false;
+          StringBuilder builder = new StringBuilder();
+          for (int i = 0; i < text.length(); i++) {
+               char c = text.charAt(i);
+               if (c == '\"' && (i == 0 || text.charAt(i - 1) != '\\')) {
+                    insideQuotes = !insideQuotes;
                }
-
-               lastIsBack = line.charAt(i) == '\\';
-          }
-          if (start == -1) throw new SyntaxException("Waiting for starter '''");
-
-          int end = -1;
-          lastIsBack = false;
-          for (i = start; i < line.length(); i++) {
-               if (!lastIsBack && line.charAt(i) == '\'') {
-                    end = i;
-                    break;
-               }
-
-               lastIsBack = line.charAt(i) == '\\';
-          }
-          if (end == -1) throw new SyntaxException("Waiting for ender '''");
-
-          return line.substring(start, end);
-     }
-
-     public String getInsideBracketsFixed(int position, String line) throws SyntaxException {
-          int i;
-          int start = -1;
-          boolean lastIsBack = false;
-          boolean inString = false;
-          for (i = position; i < line.length(); i++) {
-               if (!lastIsBack && line.charAt(i) == '\'') inString = !inString;
-
-               if (!inString && line.charAt(i) == '(') {
-                    start = i + 1;
-                    break;
-               }
-
-               lastIsBack = line.charAt(i) == '\\';
-          }
-          if (start == -1) throw new SyntaxException("Waiting for starter '('");
-
-          lastIsBack = false;
-          inString = false;
-          int end = -1;
-          for (i = start; i < line.length(); i++) {
-               if (!lastIsBack && line.charAt(i) == '\'') inString = !inString;
-
-               if (!inString && line.charAt(i) == ')') {
-                    end = i;
-                    break;
-               }
-
-               lastIsBack = line.charAt(i) == '\\';
-          }
-          if (end == -1) throw new SyntaxException("Waiting for ender ')'");
-
-          return line.substring(start, end);
-     }
-
-     public String getInside(int position, String line, char startChar, char endChar) throws SyntaxException {
-          int i;
-          int sides = 0;
-          int start = -1;
-          int end = -1;
-          boolean lastIsBack = false;
-          boolean inString = false;
-          for (i = position; i < line.length(); i++) {
-               if (!lastIsBack && line.charAt(i) == '\'') inString = !inString;
-
-               if (!inString && line.charAt(i) == startChar) {
-                    if (start == -1) start = i + 1;
-                    sides++;
-               }
-
-               lastIsBack = line.charAt(i) == '\\';
-          }
-          if (start == -1) throw new SyntaxException("Waiting for starter '" + startChar + "'");
-
-          lastIsBack = false;
-          inString = false;
-          for (i = position; i < line.length(); i++) {
-               if (!lastIsBack && line.charAt(i) == '\'') inString = !inString;
-
-               if (!inString && line.charAt(i) == endChar) {
-                    sides--;
-                    if (sides == 0) {
-                         end = i;
-                         break;
+               if (!insideQuotes && level == 0 && c == delimiter) {
+                    parts.add(builder.toString());
+                    builder = new StringBuilder();
+               } else {
+                    builder.append(c);
+                    if (!insideQuotes && (c == '{' || c == '[' || c == '(')) {
+                         level++;
+                    } else if (!insideQuotes && (c == '}' || c == ']' || c == ')')) {
+                         level--;
                     }
                }
-
-               lastIsBack = line.charAt(i) == '\\';
           }
-          if (end == -1) throw new SyntaxException("Waiting for ender '" + endChar + "'");
-
-          return line.substring(start, end);
+          parts.add(builder.toString());
+          return parts.toArray(new String[0]);
      }
 
-     public String next() {
-          boolean startInited = false;
-          int startPosition = 0;
-          for (int i = position; i < line.length(); i++) {
-               char arg = line.charAt(i);
-               if (charOperators.contains(arg)) {
-                    if (!startInited) {
-                         position++;
-                         return "" + arg;
-                    } else break;
-               }
-               if (!startInited) {
-                    if (arg != ' ') {
-                         startPosition = position;
-                         startInited = true;
+     private static String getBetween(String text, char start, char end) {
+          int startIndex = text.indexOf(start);
+
+          if (startIndex == -1) return "";
+
+          int level = 0;
+          boolean insideQuotes = false;
+          for (int i = startIndex; i < text.length(); i++) {
+               char c = text.charAt(i);
+               if (c == '\"' && (i == 0 || text.charAt(i - 1) != '\\')) {
+                    insideQuotes = !insideQuotes;
+               } else {
+                    if (!insideQuotes && c == start) {
+                         level++;
+                    } else if (!insideQuotes && c == end) {
+                         level--;
+                         if (level == 0) {
+                              return text.substring(startIndex + 1, i);
+                         }
                     }
-               } else if (arg == ' ')
-                    break;
-               position++;
+               }
           }
 
-          return line.substring(startPosition, Math.max(position, 0));
+          return "";
      }
-
-     public String getAllNext() {
-          return line.substring(position);
-     }
-
-     public static boolean have(char letter, String text) {
-          return text.indexOf(letter) != -1;
-     }
-
-     public static final Pattern PATTERN_CHEVRONS = Pattern.compile("\\<(.*?)\\>");
 
      public static String getInsideChevrons(String code) {
-          Matcher matcher = PATTERN_CHEVRONS.matcher(code);
-
-          while (matcher.find()) {
-               return matcher.group().trim();
-          }
-
-          return "";
+          return getBetween(code, '<', '>');
      }
-
-     public static final Pattern PATTERN_BRACES = Pattern.compile("\\{(.*?)\\}");
 
      public static String getInsideBraces(String code) {
-          Matcher matcher = PATTERN_BRACES.matcher(code);
-
-          while (matcher.find()) {
-               return matcher.group().trim();
-          }
-
-          return "";
+          return getBetween(code, '{', '}');
      }
-
-     public static final Pattern PATTERN_BOX_BRACKETS = Pattern.compile("\\[(.*?)\\]");
 
      public static String getInsideBoxBrackets(String code) {
-          Matcher matcher = PATTERN_BOX_BRACKETS.matcher(code);
-
-          while (matcher.find()) {
-               return matcher.group().trim();
-          }
-
-          return "";
+          return getBetween(code, '[', ']');
      }
-
-     public static final Pattern PATTERN_BRACKETS = Pattern.compile("\\((.*?)\\)");
 
      public static String getInsideBrackets(String code) {
-          Matcher matcher = PATTERN_BRACKETS.matcher(code);
-
-          while (matcher.find()) {
-               return matcher.group().trim();
-          }
-
-          return "";
+          return getBetween(code, '(', ')');
      }
-
-     public static final Pattern PATTERN_LINES = Pattern.compile("[^{}\\[\\];\"]*(\\{[^{}]*?\\}|\\[[^\\[\\]]*?\\]|\"(?:(?<!\\\\)\")*[^\"]*\"|\\([^\\(\\)]*?\\)|;)");
 
      public static boolean token(String token, String[] words) {
           return words[0].equals(token);
      }
 
+     public static boolean token(String token, String[] words, int i) {
+          return words[i].equals(token);
+     }
+
      public static String[] words(String line) {
           String[] words = new String[0];
           {
-               String regex = "\\b\\w+";
-               Matcher wordsMatcher = Pattern.compile(regex).matcher(line);
                List<String> wordsList = new ArrayList<>();
-               while (wordsMatcher.find()) {
-                    if (wordsMatcher.group().matches(".*[({\\[<].*")) {
-                         break;
-                    }
-                    wordsList.add(wordsMatcher.group().trim());
+               for (String s : line.split("\\s+|\\w+(\\.\\w+)+|\\b+|\\{|\\}|\\(|\\)|\\[|\\]|\\<|\\>")) {
+                    s = s.trim();
+                    if (!s.equals("")) wordsList.add(s);
                }
                words = wordsList.toArray(words);
           }
@@ -578,29 +414,45 @@ public class LineParser {
      }
 
      public void parse() throws SyntaxException {
-          Matcher matcher = PATTERN_LINES.matcher(code);
+          String[] lines = split(code, ';');
 
-          while (matcher.find()) {
-               String line = matcher.group().trim();
+          Boolean lb = null;
+          for (String line : lines) {
+               line = line.trim();
 
-               String[] words = new String[0];
-               {
-                    String regex = "\\b\\w+";
-                    Matcher wordsMatcher = Pattern.compile(regex).matcher(line);
-                    List<String> wordsList = new ArrayList<>();
-                    while (wordsMatcher.find()) {
-                         if (wordsMatcher.group().matches(".*[({\\[<].*")) {
-                              break;
-                         }
-                         wordsList.add(wordsMatcher.group().trim());
+               if (line.equals("")) continue;
+
+               String[] words = words(line);
+
+               if (token("else", words)) {
+                    if (lb == null) continue;
+
+                    String s = getAfter(line, "else").trim();
+                    String resultCode = s.startsWith("{") ? getInsideBraces(line) : s;
+
+                    if (!lb) {
+                         Result result = parse(resultCode);
+
+                         variables.replaceAll((k, v) -> result.vars.get(k));
+                    } else {
+                         lb = null;
+                         continue;
                     }
-                    words = wordsList.toArray(words);
+
+                    boolean elif = resultCode.startsWith("if");
+                    if (elif) {
+                         String l = getInsideBrackets(resultCode);
+                         lb = (boolean) parseValue("", l).value.get(this);
+                    }
+                    continue;
                }
+               lb = null;
 
                if (token("import", words)) {
                     line = rWord(line, words, 0);
 
-                    for (String module : removeWhitespaces(line).split(",")) {
+                    for (String module : line.split(",")) {
+                         module = module.trim();
                          if (modules.containsKey(module)) {
                               PixieModule parsed = modules.get(module);
 
@@ -625,13 +477,68 @@ public class LineParser {
                if (token("print", words)) {
                     Value parsed = parseValue("print", getInsideBrackets(line));
 
-                    System.out.println(parsed.value.get(this).toString());
+                    System.out.println(parsed.value.get(this));
+
+                    continue;
+               }
+
+               if (token("if", words)) {
+                    String inside = getInsideBrackets(line);
+
+                    String s = getAfter(line, '(', ')').trim();
+                    String resultCode = s.startsWith("{") ? getInsideBraces(line) : s;
+
+                    Object value = parseValue("", inside).value.get(this);
+                    if (value instanceof Boolean) {
+                         lb = (Boolean) value;
+                         if (lb) {
+                              Result result = parse(resultCode);
+
+                              variables.replaceAll((k, v) -> result.vars.get(k));
+                         }
+                    } else throw new SyntaxException("Not bool value provided to if");
+
+                    continue;
+               }
+
+               if (token("for", words)) {
+                    String inside = getInsideBrackets(line);
+
+                    String s = getAfter(line, '(', ')').trim();
+                    String resultCode = s.startsWith("{") ? getInsideBraces(line) : s;
+
+                    String[] args = split(inside, ';');
+                    if (args.length == 4) {
+                         Result result = parse(args[1]);
+                         String i = args[0].trim();
+                         variables.put(i, result.vars.get(i));
+                         while (((BoolValue) parseValue("", args[2]).value).value) {
+                              parse(resultCode);
+                              result = parse(args[3]);
+                              variables.put(i, result.vars.get(i));
+                         }
+                    } else {
+                         args = split(inside, ':');
+
+                         if (args.length == 2) {
+                              for (Operable i : ((ListValue) parseValue("", args[1]).value).value) {
+                                   parse(resultCode, new Value(args[0].trim(), i));
+                              }
+                         } else throw new SyntaxException("Current for type not valid");
+                    }
+                    continue;
+               }
+
+               if (token("class", words)) {
+                    ClassConstructor result = parseClass(words[1], getInsideBraces(line));
+                    classes.put(words[1], result);
 
                     continue;
                }
 
                if (token("def", words)) {
-                    functions.put(words[1], new Function(getInsideBrackets(line).split(","), new Function.Code(getInsideBraces(line), (i, j, h) -> new NullValue())));
+                    String[] inside = split(getInsideBrackets(line), ',');
+                    functions.put(words[1] + inside.length, new Function(inside, new Function.Code(getInsideBraces(line), (i, j, h) -> new NullValue())));
 
                     continue;
                }
@@ -645,95 +552,118 @@ public class LineParser {
                     break;
                }
 
-               Function function = function(words[0]);
-               if (function != null) {
-                    if (!function.code.code.equals("")) parse(words[0], function.code.code);
-                    else function.code.lamda.apply(line, words, this);
+               if (parseFunction(words[0], line, words) != null) continue;
 
-                    continue;
-               }
+               {
+                    VariableContainer container = getInstance(words[0]);
+                    Map<String, Operable> variables = container != null ? container.getVar() : this.variables;
 
-               Operable variable = variable(words[0]);
-               if (variable != null) {
-                    line = rWord(line, words, 0);
+                    String name = container != null ? getAfter(words[0], ".") : words[0];
 
-                    String isList = getInsideBoxBrackets(line);
+                    if (variables.containsKey(name)) {
+                         Operable variable = variables.get(name);
 
-                    if (sbool(isList)) {
-                         line = line.substring(isList.length() + 2).trim();
-                    }
+                         line = rWord(line, words, 0);
 
-                    String operator = "=";
-                    if (!line.startsWith("=")) {
-                         operator = line.substring(0, 2);
-                         line = line.substring(2).trim();
-                    }
+                         String isList = getInsideBoxBrackets(line);
 
-                    Value parsed = parseValue(words[0], line);
-                    if (!sbool(isList)) {
-                         switch (operator) {
-                              case "=":
-                                   variables.put(parsed.name, parsed.value);
-                                   break;
-                              case "+=":
-                                   variables.put(parsed.name, variable.add(parsed.value, this));
-                                   break;
-                              case "-=":
-                                   variables.put(parsed.name, variable.sub(parsed.value, this));
-                                   break;
-                              case "*=":
-                                   variables.put(parsed.name, variable.mul(parsed.value, this));
-                                   break;
-                              case "/=":
-                                   variables.put(parsed.name, variable.div(parsed.value, this));
-                                   break;
-                              case "^=":
-                                   variables.put(parsed.name, variable.pow(parsed.value, this));
-                                   break;
-                              case "%=":
-                                   variables.put(parsed.name, variable.mod(parsed.value, this));
-                                   break;
-                              default:
-                                   throw new SyntaxException("Cannot execute " + operator + " operator");
+                         if (sbool(isList)) {
+                              line = line.substring(isList.length() + 2).trim();
                          }
-                    } else if (variable instanceof ListValue) {
-                         Value parsedGetter = parseValue("", isList);
-                         if (!(parsedGetter.value instanceof NumValue))
-                              throw new SyntaxException("List getter is not number");
 
-                         int getter = ((Float) parsedGetter.value.get(this)).intValue();
-                         List<Operable> list = ((ListValue) variable).get(this);
+                         String operator;
+                         if (!line.startsWith("=")) {
+                              operator = line.substring(0, 2);
 
-                         if (getter >= list.size())
-                              throw new SyntaxException("Index " + getter + " out of bounds for length " + list.size());
+                              if (!operator.equals("++") && !operator.equals("--") && !operator.endsWith("=") && line.contains("(")) {
+                                   parse((FunctionValue) variable, line, this);
+                                   continue;
+                              }
 
-                         switch (operator) {
-                              case "=":
-                                   list.set(getter, parsed.value);
-                                   break;
-                              case "+=":
-                                   list.set(getter, variable.add(parsed.value, this));
-                                   break;
-                              case "-=":
-                                   list.set(getter, variable.sub(parsed.value, this));
-                                   break;
-                              case "*=":
-                                   list.set(getter, variable.mul(parsed.value, this));
-                                   break;
-                              case "/=":
-                                   list.set(getter, variable.div(parsed.value, this));
-                                   break;
-                              case "^=":
-                                   list.set(getter, variable.pow(parsed.value, this));
-                                   break;
-                              case "%=":
-                                   list.set(getter, variable.mod(parsed.value, this));
-                                   break;
-                              default:
-                                   throw new SyntaxException("Cannot execute " + operator + " operator");
+                              line = line.substring(2).trim();
+                         } else {
+                              operator = line.substring(0, 1);
+                              line = line.substring(1).trim();
                          }
-                    } else {
-                         throw new SyntaxException("Using [] on not list");
+
+                         Value parsed = (operator.equals("++") || operator.equals("--")) ? null : parseValue(name, line);
+                         if (!sbool(isList)) {
+                              switch (operator) {
+                                   case "=":
+                                        variables.put(name, parsed.value);
+                                        break;
+                                   case "+=":
+                                        variables.put(name, variable.add(parsed.value, this));
+                                        break;
+                                   case "-=":
+                                        variables.put(name, variable.sub(parsed.value, this));
+                                        break;
+                                   case "*=":
+                                        variables.put(name, variable.mul(parsed.value, this));
+                                        break;
+                                   case "/=":
+                                        variables.put(name, variable.div(parsed.value, this));
+                                        break;
+                                   case "^=":
+                                        variables.put(name, variable.pow(parsed.value, this));
+                                        break;
+                                   case "%=":
+                                        variables.put(name, variable.mod(parsed.value, this));
+                                        break;
+                                   case "++":
+                                        variables.put(name, variable.add(new NumValue(1), this));
+                                        break;
+                                   case "--":
+                                        variables.put(name, variable.sub(new NumValue(1), this));
+                                        break;
+                                   default:
+                                        throw new SyntaxException("Cannot execute " + operator + " operator");
+                              }
+                         } else if (variable instanceof ListValue) {
+                              Value parsedGetter = parseValue("", isList);
+                              if (!(parsedGetter.value instanceof NumValue))
+                                   throw new SyntaxException("List getter is not number");
+
+                              int getter = ((Float) parsedGetter.value.get(this)).intValue();
+                              List<Operable> list = ((ListValue) variable).get(this);
+
+                              if (getter >= list.size())
+                                   throw new SyntaxException("Index " + getter + " out of bounds for length " + list.size());
+
+                              switch (operator) {
+                                   case "=":
+                                        list.set(getter, parsed.value);
+                                        break;
+                                   case "+=":
+                                        list.set(getter, variable.add(parsed.value, this));
+                                        break;
+                                   case "-=":
+                                        list.set(getter, variable.sub(parsed.value, this));
+                                        break;
+                                   case "*=":
+                                        list.set(getter, variable.mul(parsed.value, this));
+                                        break;
+                                   case "/=":
+                                        list.set(getter, variable.div(parsed.value, this));
+                                        break;
+                                   case "^=":
+                                        list.set(getter, variable.pow(parsed.value, this));
+                                        break;
+                                   case "%=":
+                                        list.set(getter, variable.mod(parsed.value, this));
+                                        break;
+                                   case "++":
+                                        variables.put(name, variable.add(new NumValue(1), this));
+                                        break;
+                                   case "--":
+                                        variables.put(name, variable.sub(new NumValue(1), this));
+                                        break;
+                                   default:
+                                        throw new SyntaxException("Cannot execute " + operator + " operator");
+                              }
+                         } else {
+                              throw new SyntaxException("Using [] on not list");
+                         }
                     }
                }
           }
@@ -741,11 +671,13 @@ public class LineParser {
 
 
      public Result parse(String name, String code) throws SyntaxException {
+          name = name.trim();
+
           LineParser parser = new LineParser(code, lineIndex + 1 + executorLine);
 
           String[] inside = split(getInsideBrackets(line), ',');
           int val = 0;
-          Function funct = functions.get(removeWhitespaces(name));
+          Function funct = functions.get(name);
           for (String i : inside) {
                Value parsed = parseValue(removeWhitespaces(funct.arguments[val]), i);
                parser.variables.put(parsed.name, parsed.value);
@@ -753,6 +685,52 @@ public class LineParser {
           }
           parser.functions.putAll(functions);
           parser.parse();
+          return new Result(parser.variables, parser.functions, parser.variables.get("return"));
+     }
+
+
+     public Result parse(Function function, String line, VariableContainer instance) throws SyntaxException {
+          LineParser parser = new LineParser(function.code.code, lineIndex + 1 + executorLine, instance);
+
+          String[] inside = split(getInsideBrackets(line), ',');
+          int val = 0;
+          for (String i : inside) {
+               Value parsed = parseValue(removeWhitespaces(function.arguments[val]), i);
+               parser.variables.put(parsed.name, parsed.value);
+               val++;
+          }
+          parser.functions.putAll(functions);
+          parser.parse();
+          return new Result(parser.variables, parser.functions, parser.variables.get("return"));
+     }
+
+     public Result parse(FunctionValue function, String line, VariableContainer instance) throws SyntaxException {
+          LineParser parser = new LineParser(function.value, lineIndex + 1 + executorLine, instance);
+
+          String[] inside = split(getInsideBrackets(line), ',');
+
+          if (!(inside.length == 1 && inside[0].equals(""))) {
+               int val = 0;
+               for (String i : inside) {
+                    Value parsed = parseValue(function.arguments[val].trim(), i);
+                    parser.variables.put(parsed.name, parsed.value);
+                    val++;
+               }
+          }
+          for (String i : function.movables) {
+               i = i.trim();
+               parser.variables.put(i, variables.get(i));
+          }
+
+          parser.functions.putAll(functions);
+
+          parser.parse();
+
+          for (String i : function.movables) {
+               i = i.trim();
+               variables.put(i, parser.variables.get(i));
+          }
+
           return new Result(parser.variables, parser.functions, parser.variables.get("return"));
      }
 
@@ -766,10 +744,10 @@ public class LineParser {
           return new Result(parser.variables, parser.functions, parser.variables.get("return"));
      }
 
-     public Result parse(String name, String currentClass, Function function) throws SyntaxException {
+     public Result parse(String currentClass, Function function) throws SyntaxException {
           LineParser parser = new LineParser(function.code.code, lineIndex + 1 + executorLine);
 
-          String[] inside = split(getInsideBrackets(getNextString(0, line, listOf(name))[0].length() + name.length(), line), ',');
+          String[] inside = split(getInsideBrackets(line), ',');
           int val = 0;
           for (String i : inside) {
                Value parsed = parseValue(removeWhitespaces(function.arguments[val]), i);
@@ -823,32 +801,15 @@ public class LineParser {
           }
 
           public ClassConstructor parseClass(String className) throws SyntaxException {
-               Matcher matcher = PATTERN_LINES.matcher(code);
+               for (String line : split(code, ';')) {
+                    line = line.trim();
 
-               while (matcher.find()) {
-                    String line = matcher.group().trim();
+                    if (line.equals("")) continue;
 
-                    boolean isStatic = false;
-                    String[] words = new String[0];
-                    {
-                         String regex = "\\b\\w+";
-                         Matcher wordsMatcher = Pattern.compile(regex).matcher(line);
-                         List<String> wordsList = new ArrayList<>();
-                         while (wordsMatcher.find()) {
-                              if (wordsMatcher.group().matches(".*[({\\[<].*")) {
-                                   break;
-                              }
-                              String g = wordsMatcher.group().trim();
-                              if (wordsList.size() == 0) {
-                                   isStatic = g.startsWith("static");
-                                   line = line.replaceFirst(g, "").trim();
-                              }
-                              else {
-                                   wordsList.add(g);
-                              }
-                         }
-                         words = wordsList.toArray(words);
-                    }
+                    String[] words = words(line);
+                    boolean isStatic = words[0].equals("static");
+                    if (isStatic) line = rWord(line, words, 0);
+                    int i = isStatic ? 1 : 0;
 
                     if (token("import", words)) {
                          if (isStatic) throw new SyntaxException("Import cannot be static");
@@ -867,168 +828,49 @@ public class LineParser {
                          continue;
                     }
 
-                    if (token("field", words)) {
-                         line = rWord(rWord(rWord(line, words, 0), words, 1), words, 2);
+                    if (token("field", words, i)) {
+                         line = rWord(rWord(rWord(line, words, i), words, i + 1), words, i + 2);
 
-                         Value parsed = parseValue(words[1], line);
-                         variables.put(parsed.name, parsed.value);
+                         Value parsed = parseValue(words[i + 1], line);
 
                          (isStatic ? staticVariables : variables).put(parsed.name, parsed.value);
 
                          continue;
                     }
 
-                    if (token("function", words)) {
-                         (isStatic ? staticFunctions : functions).put(words[1], new Function(getInsideBrackets(line).split(","), new Function.Code(getInsideBraces(line), (i, j, h) -> new NullValue())));
+                    if (token("function", words, i)) {
+                         String[] args = split(getInsideBrackets(line), ',');
+                         (isStatic ? staticFunctions : functions).put(words[i + 1] + args.length, new Function(args, new Function.Code(getInsideBraces(line), (k, j, h) -> new NullValue())));
+                    }
+
+                    if (token(className, words)) {
+                         String[] args = split(getInsideBrackets(line), ',');
+                         (isStatic ? staticFunctions : functions).put("@__constructor__" + args.length, new Function(args, new Function.Code(getInsideBraces(line), (k, j, h) -> new NullValue())));
                     }
                }
                return new ClassConstructor(className, functions, staticFunctions, variables, staticVariables, executorLine + 1);
           }
      }
 
-     public static Map<String, Function> baseFunctions()
-     {
-          return new HashMap(ofEntries(/*
-                  entry("for",
-                          PixieModule.function(
-                                  (String line, String[] words, LineParser p) -> {
-                                       try {
-                                            String inside = getInsideBrackets(line);
-
-                                            String resultCode = getInsideBraces(line);
-
-                                            Operable parsedLeft = p.parseValue("", inside[0]).value;
-                                            if (parsedLeft instanceof NumValue) {
-                                                 String operator = removeWhitespaces(inside[2]);
-                                                 Object parsedRight = self.parseValue("", inside[3]).value.get(self);
-                                                 if (parsedRight instanceof Float) {
-                                                      Result result = self.parse(inside[0]);
-
-                                                      self.variables.putAll(result.vars);
-                                                      self.functions.putAll(result.functs);
-
-                                                      while (((BoolValue) self.parseValue("", resultCode.toString()).value).get(self)) {
-                                                           result = self.parse(resultCode.toString());
-
-                                                           self.variables.putAll(result.vars);
-                                                           self.functions.putAll(result.functs);
-
-                                                           self.parse(inside[2]);
-                                                      }
-                                                 }
-                                            }
-                                            if (parsedLeft instanceof BoolValue) {
-                                                 boolean b = ((BoolValue) parsedLeft).get(self);
-                                                 while (b) {
-                                                      Result result = self.parse(resultCode.toString());
-
-                                                      self.variables.putAll(result.vars);
-                                                      self.functions.putAll(result.functs);
-
-                                                      b = ((BoolValue)result.value).get(self);
-                                                 }
-                                            }
-                                            if (parsedLeft instanceof InstanceValue) {
-                                                 Map<String, Operable> values = ((InstanceValue) parsedLeft).get(self);
-                                                 values.forEach((String key, Operable o) -> {
-                                                      try {
-                                                           if (inside.length == 2) {
-                                                                Result result = self.parse(resultCode.toString(), new Value(removeWhitespaces(inside[1]), o));
-
-                                                                self.variables.putAll(result.vars);
-                                                                self.functions.putAll(result.functs);
-                                                           } else {
-                                                                Result result = self.parse(resultCode.toString(), new Value(removeWhitespaces(inside[1]), o), new Value(removeWhitespaces(inside[2]), new TextValue(key)));
-
-                                                                self.variables.putAll(result.vars);
-                                                                self.functions.putAll(result.functs);
-                                                           }
-                                                      } catch (SyntaxException e) {
-                                                           new SyntaxException(e.getMessage()).printStackTrace();
-                                                      }
-                                                 });
-                                            }
-                                            if (parsedLeft instanceof ListValue) {
-                                                 int value = 0;
-                                                 for (Operable item : ((ListValue) parsedLeft).value) {
-                                                      Result result;
-                                                      if (inside.length == 2)
-                                                           result = self.parse(resultCode.toString(), new Value(removeWhitespaces(inside[1]), item));
-                                                      else
-                                                           result = self.parse(resultCode.toString(), new Value(removeWhitespaces(inside[1]), item), new Value(removeWhitespaces(inside[2]), new NumValue(value)));
-
-                                                      self.variables.putAll(result.vars);
-                                                      self.functions.putAll(result.functs);
-                                                      value++;
-                                                 }
-                                            }
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-
-                                       return new NullValue();
-                                  }
-                          )
-                  ),*/
-                  /*
-                  entry("if",
-                          PixieModule.function(
-                                  (String line, String[] words, LineParser p) -> {
-                                       try {
-                                            String inside = getInsideBrackets(line);
-
-                                            String resultCode = getInsideBraces(line);
-
-                                            Object value = p.parseValue("", inside).value.get(p);
-                                            if (value instanceof Boolean) {
-                                                 if ((Boolean) value) {
-                                                      Result result = p.parse(sbool(resultCode) ? resultCode : );
-
-                                                      p.variables.putAll(result.vars);
-                                                      p.functions.putAll(result.functs);
-                                                 }
-
-                                            } else throw new SyntaxException("Not bool value provided to if");
-                                       } catch (SyntaxException e) {
-                                            new Exception(e.getMessage()).printStackTrace();
-                                       }
-
-                                       return new NullValue();
-                                  }
-                          )
+     public static Map<String, Function> baseFunctions() {
+          return new HashMap(ofEntries(
+                  PixieModule.function("input", 0,
+                          (String line, String[] words, LineParser p) -> new TextValue(scaner.next())
                   ),
-                   */
-                  entry("class",
-                          PixieModule.function(
-                                  (String line, String[] words, LineParser p) -> {
-                                       try {
-                                            ClassConstructor result = p.parseClass(words[1], getInsideBraces(line));
-                                            p.classes.put(words[1], result);
-                                       } catch (SyntaxException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
+                  PixieModule.function("input", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = PixieModule.get(line, words);
 
-                                       return new NullValue();
-                                  }
-                          )
-                  ),
-                  entry(
-                          "input",
-                          PixieModule.function(
-                                  (String line, String[] words, LineParser p) -> {
-                                       try {
-                                            String inside = p.getInsideBrackets(line);
+                                    System.out.print(p.parseValue("", inside[0]).value.get(p).toString());
 
-                                            System.out.print(p.parseValue("", inside).value.get(p).toString());
+                                    return new TextValue(scaner.next());
+                               } catch (SyntaxException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
 
-                                            return new TextValue(scaner.next());
-                                       } catch (SyntaxException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-
-                                       return new NullValue();
-                                  }
-                          )
+                               return new NullValue();
+                          }
                   )
           ));
      }

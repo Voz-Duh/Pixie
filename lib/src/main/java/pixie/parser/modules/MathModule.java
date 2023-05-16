@@ -4,7 +4,6 @@ import pixie.parser.LineParser;
 import pixie.parser.SyntaxException;
 import pixie.parser.values.NumValue;
 
-import java.util.Map;
 import java.util.Random;
 
 public class MathModule extends PixieModule {
@@ -13,374 +12,329 @@ public class MathModule extends PixieModule {
                   LineParser.entry("pi", new NumValue((float) Math.PI))
           );
           functions = LineParser.ofEntries(
-                  LineParser.entry("sin",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "sin");
-                                            return new NumValue((float) Math.sin(parseNum(self, inside)));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("sin", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.sin(parseNum(p, inside[0])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("cos",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "cos");
-                                            return new NumValue((float) Math.cos(parseNum(self, inside)));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("cos", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.cos(parseNum(p, inside[0])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("dsin",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "dsin");
-                                            return new NumValue((float) Math.sin(Math.toRadians(parseNum(self, inside))));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("dsin", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.sin(Math.toRadians(parseNum(p, inside[0]))));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("dcos",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "dcos");
-                                            return new NumValue((float) Math.cos(Math.toRadians(parseNum(self, inside))));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("dcos", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.cos(Math.toRadians(parseNum(p, inside[0]))));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("asin",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "asin");
-                                            return new NumValue((float) Math.asin(parseNum(self, inside)));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("asin", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.asin(parseNum(p, inside[0])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("acos",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "caos");
-                                            return new NumValue((float) Math.acos(parseNum(self, inside)));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("acos", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.acos(parseNum(p, inside[0])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("dasin",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "dasin");
-                                            return new NumValue((float) Math.asin(Math.toRadians(parseNum(self, inside))));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("dasin", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.asin(Math.toRadians(parseNum(p, inside[0]))));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("dacos",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "dacos");
-                                            return new NumValue((float) Math.acos(Math.toRadians(parseNum(self, inside))));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("dacos", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.acos(Math.toRadians(parseNum(p, inside[0]))));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("sinh",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "sinh");
-                                            return new NumValue((float) Math.sinh(parseNum(self, inside)));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("sinh", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.sinh(parseNum(p, inside[0])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("cosh",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "cosh");
-                                            return new NumValue((float) Math.cosh(parseNum(self, inside)));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("cosh", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.cosh(parseNum(p, inside[0])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("dsinh",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "dsinh");
-                                            return new NumValue((float) Math.sinh(Math.toRadians(parseNum(self, inside))));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("dsinh", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.sinh(Math.toRadians(parseNum(p, inside[0]))));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("dcosh",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "dcosh");
-                                            return new NumValue((float) Math.cosh(Math.toRadians(parseNum(self, inside))));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("dcosh", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.cosh(Math.toRadians(parseNum(p, inside[0]))));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("rad",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "rad");
-                                            return new NumValue((float) Math.toRadians(parseNum(self, inside)));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("rad", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.toRadians(parseNum(p, inside[0])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("deg",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "deg");
-                                            return new NumValue((float) Math.toDegrees(parseNum(self, inside)));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("deg", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.toDegrees(parseNum(p, inside[0])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("tan",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "tan");
-                                            return new NumValue((float) Math.tan(parseNum(self, inside)));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("tan", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.tan(parseNum(p, inside[0])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("atan2",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String[] inside = base(self, "atan2");
-                                            return new NumValue((float) Math.atan2(parseNum(self, inside[0]), parseNum(self, inside[0])));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("atan2", 2,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.atan2(parseNum(p, inside[0]), parseNum(p, inside[0])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("atan",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "atan");
-                                            return new NumValue((float) Math.atan(parseNum(self, inside)));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("atan", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.atan(parseNum(p, inside[0])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("clamp",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String[] inside = base(self, "clamp");
-                                            return new NumValue(Math.max(Math.min(parseNum(self, inside[0]), parseNum(self, inside[2])), parseNum(self, inside[1])));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("clamp", 3,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue(Math.max(Math.min(parseNum(p, inside[0]), parseNum(p, inside[2])), parseNum(p, inside[1])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("max",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String[] inside = base(self, "max");
-                                            return new NumValue(Math.max(parseNum(self, inside[0]), parseNum(self, inside[2])));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("max", 2,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue(Math.max(parseNum(p, inside[0]), parseNum(p, inside[2])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("min",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String[] inside = base(self, "min");
-                                            return new NumValue(Math.min(parseNum(self, inside[0]), parseNum(self, inside[1])));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("min", 2,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue(Math.min(parseNum(p, inside[0]), parseNum(p, inside[1])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("lerp_deg",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String[] inside = base(self, "lerp_deg");
-                                            return new NumValue(angleLerp((float) Math.toRadians(parseNum(self, inside[0])), (float) Math.toRadians(parseNum(self, inside[1])), parseNum(self, inside[2])));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("lerp_deg", 3,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue(angleLerp((float) Math.toRadians(parseNum(p, inside[0])), (float) Math.toRadians(parseNum(p, inside[1])), parseNum(p, inside[2])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("lerp_rad",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String[] inside = base(self, "lerp_rad");
-                                            return new NumValue(angleLerp(parseNum(self, inside[0]), parseNum(self, inside[1]), parseNum(self, inside[2])));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("lerp_rad", 3,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue(angleLerp(parseNum(p, inside[0]), parseNum(p, inside[1]), parseNum(p, inside[2])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("lerp",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String[] inside = base(self, "lerp");
-                                            return new NumValue(lerp(parseNum(self, inside[0]), parseNum(self, inside[1]), parseNum(self, inside[2])));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("lerp", 3,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue(lerp(parseNum(p, inside[0]), parseNum(p, inside[1]), parseNum(p, inside[2])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("random",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String[] inside = base(self, "random");
+                  function("random", 2,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
 
-                                            if (inside.length == 1)
-                                                 if (LineParser.removeWhitespaces(inside[0]).equals("")) return new NumValue(random());
-                                                 else return new NumValue(random(parseNum(self, inside[0])));
-                                            else
-                                                 return new NumValue(random(parseNum(self, inside[0]), parseNum(self, inside[1])));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                                    return new NumValue(random(parseNum(p, inside[0]), parseNum(p, inside[1])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("floor",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "floor");
-                                            return new NumValue((float) Math.floor(parseNum(self, inside)));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("random", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+
+                                    return new NumValue(random(parseNum(p, inside[0])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("ceil",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "ceil");
-                                            return new NumValue((float) Math.ceil(parseNum(self, inside)));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("random", 0,
+                          (String line, String[] words, LineParser p) -> new NumValue(random())
                   ),
-                  LineParser.entry("round",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "round");
-                                            return new NumValue((float) Math.round(parseNum(self, inside)));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("floor", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.floor(parseNum(p, inside[0])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("sqrt",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "sqrt");
-                                            return new NumValue((float) Math.sqrt(parseNum(self, inside)));
-                                       } catch (SyntaxException e) {
-                                            e.printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("ceil", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.ceil(parseNum(p, inside[0])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
+                  ),
+                  function("round", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.round(parseNum(p, inside[0])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
+                  ),
+                  function("sqrt", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new NumValue((float) Math.sqrt(parseNum(p, inside[0])));
+                               } catch (SyntaxException e) {
+                                    e.printStackTrace();
+                               }
+                               return null;
+                          }
                   )
           );
      }

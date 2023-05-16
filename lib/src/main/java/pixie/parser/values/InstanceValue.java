@@ -8,7 +8,7 @@ import java.util.Map;
 
 import static pixie.parser.values.NullValue.*;
 
-public class InstanceValue implements Operable<Map<String, Operable>> {
+public class InstanceValue implements Operable<Map<String, Operable>>, VariableContainer {
      public Map<String, Operable> variables = new HashMap<>();
      public Map<String, Function> functions = new HashMap<>();
      public ClassConstructor currentClass;
@@ -27,186 +27,133 @@ public class InstanceValue implements Operable<Map<String, Operable>> {
           this.currentClass = currentClass;
      }
 
+     public Map<String, Operable> getVar() {
+          return variables;
+     }
+
+     @Override
+     public Map<String, Function> getFunc() {
+          return functions;
+     }
+
      @Override
      public Map<String, Operable> get(LineParser parser) {
           return variables;
      }
 
+     Operable operator(Operable other, String func, String operator) throws SyntaxException {
+          if (!currentClass.staticFunctions.containsKey(func)) throw new SyntaxException(currentClass.name + " dont have " + operator + " operator");
+
+          return parse(currentClass.staticFunctions.get(func), this, other);
+     }
+
      @Override
      public Operable add(Operable other, LineParser parser) throws SyntaxException {
-          if (!functions.containsKey("@add")) throw addExc(this, other);
-
-          return parse(parser, functions.get("@add"), other);
+          return operator(other, "@add", "+");
      }
 
      @Override
      public Operable sub(Operable other, LineParser parser) throws SyntaxException {
-          if (!functions.containsKey("@sub")) throw subExc(this, other);
-
-          return parse(parser, functions.get("@sub"), other);
+          return operator(other, "@sub", "-");
      }
 
      @Override
      public Operable mul(Operable other, LineParser parser) throws SyntaxException {
-          if (!functions.containsKey("@mul")) throw mulExc(this, other);
-
-          return parse(parser, functions.get("@mul"), other);
+          return operator(other, "@mul", "*");
      }
 
      @Override
      public Operable div(Operable other, LineParser parser) throws SyntaxException {
-          if (!functions.containsKey("@div")) throw divExc(this, other);
-
-          return parse(parser, functions.get("@idv"), other);
+          return operator(other, "@div", "/");
      }
 
      @Override
      public Operable pow(Operable other, LineParser parser) throws SyntaxException {
-          if (!functions.containsKey("@pow")) throw powExc(this, other);
-
-          return parse(parser, functions.get("@pow"), other);
+          return operator(other, "@pow", "^");
      }
 
      @Override
      public Operable mod(Operable other, LineParser parser) throws SyntaxException {
-          if (!functions.containsKey("@mod")) throw modExc(this, other);
-
-          return parse(parser, functions.get("@mod"), other);
+          return operator(other, "@mod", "%");
      }
 
      @Override
      public Operable and(Operable other, LineParser parser) throws SyntaxException {
-          if (!functions.containsKey("@and")) throw andExc(this, other);
-
-          return parse(parser, functions.get("@and"), other);
+          return operator(other, "@and", "&&");
      }
 
      @Override
      public Operable or(Operable other, LineParser parser) throws SyntaxException {
-          if (!functions.containsKey("@or")) throw orExc(this, other);
-
-          return parse(parser, functions.get("@or"), other);
+          return operator(other, "@or", "||");
      }
 
      @Override
      public BoolValue more(Operable other, LineParser parser) throws SyntaxException {
-          if (!functions.containsKey("@more")) throw moreExc(this, other);
-
-          return (BoolValue) parse(parser, functions.get("@more"), other);
+          return (BoolValue) operator(other, "@more", ">");
      }
 
      @Override
      public BoolValue less(Operable other, LineParser parser) throws SyntaxException {
-          if (!functions.containsKey("@less")) throw lessExc(this, other);
-
-          return (BoolValue) parse(parser, functions.get("@less"), other);
+          return (BoolValue) operator(other, "@less", "<");
      }
 
      @Override
      public BoolValue moreEqu(Operable other, LineParser parser) throws SyntaxException {
-          if (!functions.containsKey("@more_equals")) throw moreExc(this, other);
-
-          return (BoolValue) parse(parser, functions.get("@more_equals"), other);
+          return (BoolValue) operator(other, "@more_equals", ">=");
      }
 
      @Override
      public BoolValue lessEqu(Operable other, LineParser parser) throws SyntaxException {
-          if (!functions.containsKey("@less_equals")) throw lessEquExc(this, other);
-
-          return (BoolValue) parse(parser, functions.get("@less_equals"), other);
+          return (BoolValue) operator(other, "@less_equals", "<=");
      }
 
      @Override
      public BoolValue equals(Operable other, LineParser parser) throws SyntaxException {
-          if (!functions.containsKey("@equals")) throw equalsExc(this, other);
-
-          return (BoolValue) parse(parser, functions.get("@equals"), other);
+          return (BoolValue) operator(other, "@equals", "==");
      }
 
      @Override
      public BoolValue notEquals(Operable other, LineParser parser) throws SyntaxException {
-          if (!functions.containsKey("@not_equals")) throw notEqualsExc(this, other);
-
-          return (BoolValue) parse(parser, functions.get("@not_equals"), other);
+          return (BoolValue) operator(other, "@not_equals", "!=");
      }
 
      @Override
      public Operable inv(LineParser parser) throws SyntaxException {
-          if (!functions.containsKey("@inv")) throw invExc(this);
+          if (!currentClass.staticFunctions.containsKey("@inv")) throw new SyntaxException(currentClass.name + " dont have ! operator");
 
-          return parse(parser, functions.get("@inv"));
+          return parse(currentClass.staticFunctions.get("@inv"), this);
      }
 
-     public Operable parse(LineParser self, Function function, Operable other) throws SyntaxException {
-          LineParser parser = new LineParser(function.code.code, currentClass.line);
+     public Operable parse(Function function, Operable... values) throws SyntaxException {
+          LineParser parser = new LineParser(function.code.code, 0, null);
 
-          parser.classes.putAll(self.classes);
-
-          parser.variables.putAll(currentClass.staticVariables);
-          parser.variables.putAll(variables);
-          parser.variables.put("other", other);
-
-          parser.functions.putAll(currentClass.staticFunctions);
-          parser.functions.putAll(currentClass.functions);
-          parser.parse();
-
-          variables.forEach((String key, Operable i) -> {
-               variables.put(key, parser.variables.get(key));
-          });
-          currentClass.staticVariables.forEach((String key, Operable i) -> {
-               currentClass.staticVariables.put(key, parser.variables.get(key));
-          });
-
-          return parser.variables.get("return");
-     }
-
-     public Operable parse(LineParser self, Function function) throws SyntaxException {
-          LineParser parser = new LineParser(function.code.code, currentClass.line);
-
-          parser.classes.putAll(self.classes);
-
-          parser.variables.putAll(currentClass.staticVariables);
-          parser.variables.putAll(variables);
-
-          parser.functions.putAll(currentClass.staticFunctions);
-          parser.functions.putAll(currentClass.functions);
-          parser.parse();
-
-          variables.forEach((String key, Operable i) -> {
-               variables.put(key, parser.variables.get(key));
-          });
-          currentClass.staticVariables.forEach((String key, Operable i) -> {
-               currentClass.staticVariables.put(key, parser.variables.get(key));
-          });
-
-          return parser.variables.get("return");
-     }
-
-     public Operable parse(LineParser self, String name, Function function) throws SyntaxException {
-          LineParser parser = new LineParser(function.code.code, currentClass.line);
-
-          String[] inside = self.split(self.getInsideBrackets(self.getNextString(0, self.line, LineParser.listOf(name))[0].length() + name.length(), self.line), ',');
           int val = 0;
-          for (String i : inside) {
-               LineParser.Value parsed = self.parseValue(LineParser.removeWhitespaces(function.arguments[val]), i);
-               parser.variables.put(parsed.name, parsed.value);
+          for (Operable i : values) {
+               parser.variables.put(function.arguments[val].trim(), i);
                val++;
           }
+          parser.functions.putAll(functions);
+          parser.parse();
+          return parser.variables.get("return");
+     }
+
+     public Operable parse(LineParser self, Function function, String[] inside) throws SyntaxException {
+          LineParser parser = new LineParser(function.code.code, currentClass.line, this);
+
           parser.classes.putAll(self.classes);
 
-          parser.variables.putAll(currentClass.staticVariables);
-          parser.variables.putAll(variables);
+          int val = 0;
+          for (String i : inside) {
+               LineParser.Value value = self.parseValue(function.arguments[val].trim(), i);
+               parser.variables.put(value.name, value.value);
+               val++;
+          }
+          parser.functions.putAll(functions);
 
-          parser.functions.putAll(currentClass.staticFunctions);
-          parser.functions.putAll(currentClass.functions);
           parser.parse();
 
-          variables.forEach((String key, Operable i) -> {
-               variables.put(key, parser.variables.get(key));
-          });
-          currentClass.staticVariables.forEach((String key, Operable i) -> {
-               currentClass.staticVariables.put(key, parser.variables.get(key));
-          });
+          variables.forEach((key, i) -> variables.put(key, parser.variables.get(key)));
+          currentClass.staticVariables.forEach((key, i) -> currentClass.staticVariables.put(key, parser.variables.get(key)));
 
           return parser.variables.get("return");
      }

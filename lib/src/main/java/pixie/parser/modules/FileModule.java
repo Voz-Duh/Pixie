@@ -20,222 +20,215 @@ public class FileModule extends PixieModule {
                   LineParser.entry("file", FileValue.class)
           );
           functions = LineParser.ofEntries(
-                  LineParser.entry("get_file",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "get_file");
-                                            return new FileValue(new File(parseText(self, inside)));
-                                       } catch (SyntaxException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("get_file", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new FileValue(new File(parseText(p, inside[0])));
+                               } catch (SyntaxException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("have_file",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String[] inside = base(self, "have_file");
-                                            StringBuilder result = new StringBuilder();
-                                            if (inside.length == 2) {
-                                                 File file = parseFile(self, inside[1]);
-                                                 if (file.isFile()) result.append(file.getPath()).append('\\');
-                                                 else result.append(file.getAbsoluteFile()).append('\\');
+                  function("have_file", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
 
-                                                 return new BoolValue(new File(result + parseText(self, inside[0])).exists());
-                                            }
-                                            if (inside.length == 1) {
-                                                 try {
-                                                      return new BoolValue(parseFile(self, inside[0]).exists());
-                                                 } catch (Exception e) {
-                                                      return new BoolValue(new File(parseText(self, inside[0])).exists());
-                                                 }
-                                            }
-                                       } catch (SyntaxException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                                    try {
+                                         return new BoolValue(parseFile(p, inside[0]).exists());
+                                    } catch (Exception e) {
+                                         return new BoolValue(new File(parseText(p, inside[0])).exists());
+                                    }
+                               } catch (SyntaxException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("create_file",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String[] inside = base(self, "create_file");
-                                            StringBuilder result = new StringBuilder();
-                                            if (inside.length == 2) {
-                                                 File file = parseFile(self, inside[1]);
-                                                 if (file.isFile()) result.append(file.getPath()).append('\\');
-                                                 else result.append(file.getAbsoluteFile()).append('\\');
-                                            }
-                                            File newFile = new File(result + parseText(self, inside[0]));
-                                            boolean success = newFile.createNewFile();
-                                            return new FileValue(newFile);
-                                       } catch (SyntaxException | IOException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
-                  ),
-                  LineParser.entry("read_file",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "read_file");
+                  function("have_file", 2,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    StringBuilder result = new StringBuilder();
 
-                                            final StringBuilder result = new StringBuilder();
-                                            BufferedReader br = new BufferedReader(new FileReader(parseFile(self, inside)));
+                                    File file = parseFile(p, inside[1]);
+                                    if (file.isFile()) result.append(file.getPath()).append('\\');
+                                    else result.append(file.getAbsoluteFile()).append('\\');
 
-                                            br.lines().forEach(s -> result.append(s).append('\n'));
+                                    return new BoolValue(new File(result + parseText(p, inside[0])).exists());
+                               } catch (SyntaxException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
+                  ),
+                  function("create_file", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    File newFile = new File(parseText(p, inside[0]));
+                                    return new FileValue(newFile);
+                               } catch (SyntaxException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
+                  ),
+                  function("create_file", 2,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    StringBuilder result = new StringBuilder();
 
-                                            return new TextValue(result.toString());
-                                       } catch (SyntaxException | FileNotFoundException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
-                  ),
-                  LineParser.entry("delete_file",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "delete_file");
-                                            parseFile(self, inside).delete();
-                                       } catch (SyntaxException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
-                  ),
-                  LineParser.entry("is_folder",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "is_folder");
-                                            return new BoolValue(parseFile(self, inside).isDirectory());
-                                       } catch (SyntaxException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
-                  ),
-                  LineParser.entry("is_file",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "is_file");
-                                            return new BoolValue(parseFile(self, inside).isFile());
-                                       } catch (SyntaxException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
-                  ),
-                  LineParser.entry("file_name",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "file_name");
-                                            return new TextValue(parseFile(self, inside).getName());
-                                       } catch (SyntaxException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
-                  ),
-                  LineParser.entry("file_path",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "file_path");
-                                            return new TextValue(parseFile(self, inside).getPath());
-                                       } catch (SyntaxException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
-                  ),
-                  LineParser.entry("get_files",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "get_files");
-                                            File[] files = parseFile(self, inside).listFiles();
-                                            Map.Entry[] entries = new Map.Entry[files.length];
-                                            for (int i = 0; i < files.length; i++) {
-                                                 entries[i] = LineParser.entry("f" + i, new FileValue(files[i]));
-                                            }
+                                    File file = parseFile(p, inside[1]);
+                                    if (file.isFile()) result.append(file.getPath()).append('\\');
+                                    else result.append(file.getAbsoluteFile()).append('\\');
 
-                                            return new InstanceValue(entries);
-                                       } catch (SyntaxException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                                    File newFile = new File(result + parseText(p, inside[0]));
+                                    return new FileValue(newFile);
+                               } catch (SyntaxException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("is_executable",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "is_executable");
-                                            File file = parseFile(self, inside);
-                                            return new BoolValue(file.isFile() && file.getName().endsWith("." + LineParser.executableType));
-                                       } catch (SyntaxException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("read_file", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+
+                                    final StringBuilder result = new StringBuilder();
+                                    BufferedReader br = new BufferedReader(new FileReader(parseFile(p, inside[0])));
+
+                                    br.lines().forEach(s -> result.append(s).append('\n'));
+
+                                    return new TextValue(result.toString());
+                               } catch (SyntaxException | FileNotFoundException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("execute",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String inside = one(self, "execute");
-
-                                            final StringBuilder result = new StringBuilder();
-                                            BufferedReader br = new BufferedReader(new FileReader(parseFile(self, inside)));
-
-                                            br.lines().forEach(s -> result.append(s).append('\n'));
-
-                                            LineParser.Result parse_result = self.parse(result.toString());
-
-                                            self.variables.putAll(parse_result.vars);
-                                            self.functions.putAll(parse_result.functs);
-                                       } catch (SyntaxException | FileNotFoundException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                  function("delete_file", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    parseFile(p, inside[0]).delete();
+                               } catch (SyntaxException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
                   ),
-                  LineParser.entry("print_to_file",
-                          function(
-                                  (LineParser self) -> {
-                                       try {
-                                            String[] inside = base(self, "print_to_file");
-                                            File file = parseFile(self, inside[0]);
+                  function("is_folder", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new BoolValue(parseFile(p, inside[0]).isDirectory());
+                               } catch (SyntaxException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
+                  ),
+                  function("is_file", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new BoolValue(parseFile(p, inside[0]).isFile());
+                               } catch (SyntaxException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
+                  ),
+                  function("file_name", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new TextValue(parseFile(p, inside[0]).getName());
+                               } catch (SyntaxException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
+                  ),
+                  function("file_path", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    return new TextValue(parseFile(p, inside[0]).getPath());
+                               } catch (SyntaxException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
+                  ),
+                  function("get_files", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    File[] files = parseFile(p, inside[0]).listFiles();
+                                    Map.Entry[] entries = new Map.Entry[files.length];
+                                    for (int i = 0; i < files.length; i++) {
+                                         entries[i] = LineParser.entry("f" + i, new FileValue(files[i]));
+                                    }
 
-                                            FileWriter myWriter = new FileWriter(file);
-                                            myWriter.write(parseText(self, inside[1]));
-                                            myWriter.close();
-                                       } catch (SyntaxException | IOException e) {
-                                            new SyntaxException(e.getMessage()).printStackTrace();
-                                       }
-                                       return null;
-                                  }
-                          )
+                                    return new InstanceValue(entries);
+                               } catch (SyntaxException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
+                  ),
+                  function("is_executable", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    File file = parseFile(p, inside[0]);
+                                    return new BoolValue(file.isFile() && file.getName().endsWith("." + LineParser.executableType));
+                               } catch (SyntaxException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
+                  ),
+                  function("execute", 1,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+
+                                    final StringBuilder result = new StringBuilder();
+                                    BufferedReader br = new BufferedReader(new FileReader(parseFile(p, inside[0])));
+
+                                    br.lines().forEach(s -> result.append(s).append('\n'));
+
+                                    LineParser.Result parse_result = p.parse(result.toString());
+
+                                    p.variables.putAll(parse_result.vars);
+                                    p.functions.putAll(parse_result.functs);
+                               } catch (SyntaxException | FileNotFoundException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
+                  ),
+                  function("print_to_file", 2,
+                          (String line, String[] words, LineParser p) -> {
+                               try {
+                                    String[] inside = get(line, words);
+                                    File file = parseFile(p, inside[0]);
+
+                                    FileWriter myWriter = new FileWriter(file);
+                                    myWriter.write(parseText(p, inside[1]));
+                                    myWriter.close();
+                               } catch (SyntaxException | IOException e) {
+                                    new SyntaxException(e.getMessage()).printStackTrace();
+                               }
+                               return null;
+                          }
                   )
           );
      }
