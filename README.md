@@ -31,123 +31,96 @@ Pixie.executeResource(<path_to_your_pixie_file_inside_resources>, CurrentClass.c
 ``
 
 ### Syntex
-
-<details><summary>Classes</summary>
+<details><summary>Example code</summary>
 <p>
 
-  You can define class by ``class``
-  
-  Class example:
-  ```py
-  class Test {
-      import math
+```py
+def f(b)
+{
+    if (b){
+        print("Yes");
+    };
+    else if (!b) print("No");
+    else print("Cannot");
+};
 
-      field f_str = ''
-      field f_val = 0
+var b = true;
+f(b);
+b = !b;
+f(b);
 
-      function @init(f_str, f_val){
-      }
+var inst = new instance(x: 4, y: "Lol in \"string\"");
+print(inst.x);
+print(inst.y);
 
-      function @add(other) {
-          return f_str + other
-      }
+class Test
+{
+    static function print(s0, s1)
+    {
+        print(s0 + s1);
+    };
 
-      function @inv() {
-          return !f_val
-      }
+    static field y = "Lol";
+    field s0 = "2";
+    field s1 = "2";
 
-      function test(string, test) {
-          return string + test + dsin(f_val)
-      }
-  }
-  ```
-  
-  Classes uses ther own imports, you can see that in the example
+    Test(s)
+    {
+        s0 = s;
+    };
 
-  For use class you need print their contructor ``init Test('Some text', 100)``
+    Test(s0, s1)
+    {
+        this.s0 = s0;
+        this.s1 = s1;
+    };
 
-  You also can define not classed instance by ``init(<var_name>: <var_value>)``
-</p>
-</details>
+    function print()
+    {
+        print(s0 + this.s1);
+    };
 
-<details><summary>Variables</summary>
-<p>
+    function print(s)
+    {
+        print(s);
+    };
+};
 
-  You can define variable by ``var``
+print(Test.y);
+Test.print("4", "2");
 
-  Example: ``var <variable_name> = <value>``
+var t = new Test("3");
+t.print();
 
-  For string values you need write it inside apostrophes
+t = new Test("3", "4");
+t.print();
+t.print("5");
 
-  Example: ``'Hello world!'``
-</p>
-</details>
+var y = ["a", "b", "c"];
 
-<details><summary>Import</summary>
-<p>
+for (i : y)
+{
+    print(i);
+};
 
-  You can import new module by ``import <some_module>`` or import modules by ``import <some_module>, <more_modules>``
-</p>
-</details>
+y += "d";
 
+for (i : y)
+    print(i);
 
-<details><summary>Function</summary>
-<p>
+for (i; var i = 0; i < 4; i++)
+{
+    print(i);
+};
 
-  You can define your function with ``def``
-
-  ```py
-  def test_funct(arg0, arg1) {
-    print(arg0 + arg1)
-  }
-  ```
-</p>
-</details>
-
-<details><summary>Math</summary>
-<p>
-
-  Use ``import math`` for more math functions
-
-  ``4 + 5 * 2`` will return ``18``
-
-  ``5 * 2 + 4`` will return ``14``
-
-  Same with ``/``
-  </p>
-  </details>
-
-  <details><summary>For</summary>
-  <p>
-
-  For:
-  ```py
-  for (0, i, <, 4, 1) {
-    print(i)
-  }
-  ```
-
-  Foreach:
-  ```py
-  var inst = init(x: 1, y: 4)
-  for (inst, value, key) {
-    print(key + ': ' + value)
-  }
-  ```
-
-  While
-  ```py
-  for (<bool>) {
-    #if return value is false for will breaked
-    return <bool>
-  }
-  ```
+for (j; var j = 5; j >= 0; j--) print(j);
+```
 </p>
 </details>
 
 ### Modules
 You free to write your own Pixie module and use them inside your Pixie code
-<details><summary>Here you can see little example module</summary>
+<details><summary>Example module</summary>
 <p>
 
 ```java
@@ -158,43 +131,37 @@ public class Run {
 
      public static class ExampleModule extends PixieModule {
           public ExampleModule() {
-               variables = Map.ofEntries(
+               variables = LineParser.ofEntries(
                        Map.entry("example_variable", new NumValue(5))
                );
-               functions = Map.ofEntries(
-                       Map.entry("example_function",
-                               function(
-                                       (LineParser self) -> {
-                                            System.out.println("Real example");
-                                            return new NullValue();
-                                       }
-                               )
+               functions = LineParser.ofEntries(
+                       function("example_function", 0,
+                               (LineParser self) -> {
+                                    System.out.println("Real example");
+                                    return new NullValue();
+                               }
                        ),
-                       Map.entry("example_function_one",
-                               function(
-                                       (LineParser self) -> {
-                                            try {
-                                                 String inside = one(self, "example_function_one");
-                                                 System.out.println("Real example: " + parseText(self, inside));
-                                            } catch (SyntaxException e) {
-                                                 new SyntaxException(e.getMessage()).printStackTrace();
-                                            }
-                                            return new NullValue();
-                                       }
-                               )
+                       function("example_function_one", 1,
+                               (LineParser self) -> {
+                                    try {
+                                         String[] inside = get(line, words);
+                                         System.out.println("Real example: " + parseText(self, inside[0]));
+                                    } catch (SyntaxException e) {
+                                         new SyntaxException(e.getMessage()).printStackTrace();
+                                    }
+                                    return new NullValue();
+                               }
                        ),
-                       Map.entry("example_function_base",
-                               function(
-                                       (LineParser self) -> {
-                                            try {
-                                                 String[] inside = base(self, "example_function_base");
-                                                 System.out.println("Real example: " + parseText(self, inside[0]) + " : " + parseText(self, inside[1]));
-                                            } catch (SyntaxException e) {
-                                                 new SyntaxException(e.getMessage()).printStackTrace();
-                                            }
-                                            return new NullValue();
-                                       }
-                               )
+                       function("example_function_two", 2,
+                               (String line, String[] words, LineParser p) -> {
+                                    try {
+                                         String[] inside = get(line, words);
+                                         System.out.println("Real example: " + parseText(self, inside[0]) + " : " + parseText(self, inside[1]));
+                                    } catch (SyntaxException e) {
+                                         new SyntaxException(e.getMessage()).printStackTrace();
+                                    }
+                                    return new NullValue();
+                               }
                        )
                );
           }
