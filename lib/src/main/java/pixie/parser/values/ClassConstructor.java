@@ -6,18 +6,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ClassConstructor implements VariableContainer {
-     public int line;
      public String name;
      public Map<String, Operable> variables, staticVariables;
      public Map<String, Function> functions, staticFunctions;
 
-     public ClassConstructor(String name, Map<String, Function> function, Map<String, Function> staticFunctions, Map variables, Map staticVariables, int line) {
+     public ClassConstructor(String name, Map<String, Function> function, Map<String, Function> staticFunctions, Map variables, Map staticVariables) {
           this.name = name;
           this.staticFunctions = new HashMap(staticFunctions);
           this.variables = new HashMap(variables);
           this.staticVariables = new HashMap(staticVariables);
           this.functions = new HashMap(function);
-          this.line = line;
      }
 
      @Override

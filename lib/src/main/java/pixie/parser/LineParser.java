@@ -9,7 +9,6 @@ import pixie.parser.values.*;
 import java.util.*;
 
 public class LineParser implements VariableContainer {
-     public int executorLine;
      public final static String executableType = "pixie";
      public final static Scanner scaner = new Scanner(System.in);
      public final Map<String, ClassConstructor> classes = new HashMap<>();
@@ -82,20 +81,13 @@ public class LineParser implements VariableContainer {
      public int lineIndex = 0;
      public VariableContainer instance = null;
 
-     public LineParser(String code, int executorLine) {
+     public LineParser(String code) {
           this.code = code;
-          this.executorLine = executorLine;
      }
 
-     public LineParser(String code, int executorLine, VariableContainer instance) {
+     public LineParser(String code, VariableContainer instance) {
           this.code = code;
           this.instance = instance;
-          this.executorLine = executorLine;
-
-          VariableContainer _instance = this.instance != null ? this.instance : this;
-
-          variables = _instance.getVar();
-          functions = _instance.getFunc();
      }
 
      @Override
@@ -416,8 +408,10 @@ public class LineParser implements VariableContainer {
      public void parse() throws SyntaxException {
           String[] lines = split(code, ';');
 
+          String last = "";
           Boolean lb = null;
           for (String line : lines) {
+               last = line;
                line = line.trim();
 
                if (line.equals("")) continue;
@@ -458,6 +452,8 @@ public class LineParser implements VariableContainer {
 
                               variables.putAll(parsed.variables);
                               functions.putAll(parsed.functions);
+                              //TODO: Class support
+                              //classes.putAll(parsed.classes);
                               values.putAll(parsed.values);
                          } else throw new SyntaxException("Cannot import " + module);
                     }
@@ -673,7 +669,7 @@ public class LineParser implements VariableContainer {
      public Result parse(String name, String code) throws SyntaxException {
           name = name.trim();
 
-          LineParser parser = new LineParser(code, lineIndex + 1 + executorLine);
+          LineParser parser = new LineParser(code);
 
           String[] inside = split(getInsideBrackets(line), ',');
           int val = 0;
@@ -690,7 +686,7 @@ public class LineParser implements VariableContainer {
 
 
      public Result parse(Function function, String line, VariableContainer instance) throws SyntaxException {
-          LineParser parser = new LineParser(function.code.code, lineIndex + 1 + executorLine, instance);
+          LineParser parser = new LineParser(function.code.code, instance);
 
           String[] inside = split(getInsideBrackets(line), ',');
           int val = 0;
@@ -705,7 +701,7 @@ public class LineParser implements VariableContainer {
      }
 
      public Result parse(FunctionValue function, String line, VariableContainer instance) throws SyntaxException {
-          LineParser parser = new LineParser(function.value, lineIndex + 1 + executorLine, instance);
+          LineParser parser = new LineParser(function.value, instance);
 
           String[] inside = split(getInsideBrackets(line), ',');
 
@@ -735,7 +731,7 @@ public class LineParser implements VariableContainer {
      }
 
      public Result parse(String code, Value... values) throws SyntaxException {
-          LineParser parser = new LineParser(code, lineIndex + 1 + executorLine);
+          LineParser parser = new LineParser(code);
 
           parser.variables.putAll(variables);
           for (Value value : values) parser.variables.put(value.name, value.value);
@@ -745,7 +741,7 @@ public class LineParser implements VariableContainer {
      }
 
      public Result parse(String currentClass, Function function) throws SyntaxException {
-          LineParser parser = new LineParser(function.code.code, lineIndex + 1 + executorLine);
+          LineParser parser = new LineParser(function.code.code);
 
           String[] inside = split(getInsideBrackets(line), ',');
           int val = 0;
@@ -764,7 +760,7 @@ public class LineParser implements VariableContainer {
      }
 
      public ClassConstructor parseClass(String className, String code) throws SyntaxException {
-          ClassParser parser = new ClassParser(code, lineIndex + 1 + executorLine);
+          ClassParser parser = new ClassParser(code);
 
           parser.functions.putAll(functions);
           return parser.parseClass(className);
@@ -796,8 +792,8 @@ public class LineParser implements VariableContainer {
           public final Map<String, Operable> staticVariables = new HashMap<>();
           public Map<String, Function> staticFunctions = new HashMap<>();
 
-          public ClassParser(String code, int executorLine) {
-               super(code, executorLine);
+          public ClassParser(String code) {
+               super(code);
           }
 
           public ClassConstructor parseClass(String className) throws SyntaxException {
@@ -848,7 +844,7 @@ public class LineParser implements VariableContainer {
                          (isStatic ? staticFunctions : functions).put("@__constructor__" + args.length, new Function(args, new Function.Code(getInsideBraces(line), (k, j, h) -> new NullValue())));
                     }
                }
-               return new ClassConstructor(className, functions, staticFunctions, variables, staticVariables, executorLine + 1);
+               return new ClassConstructor(className, functions, staticFunctions, variables, staticVariables);
           }
      }
 

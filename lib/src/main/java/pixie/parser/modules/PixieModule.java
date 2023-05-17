@@ -14,14 +14,22 @@ public class PixieModule {
      public Map<String, Class> values = LineParser.ofEntries();
      public Map<String, Operable> variables = LineParser.ofEntries();
      public Map<String, Function> functions = LineParser.ofEntries();
+     //TODO: Class support
+     //public Map<String, ClassConstructor> classes = LineParser.ofEntries();
 
      public static Map.Entry function(String name, int args, Function.Function3<String, String[], LineParser, Operable> function) {
           return LineParser.entry(name + args, new Function(new String[0], new Function.Code("", function)));
      }
 
+     //TODO: Class support
+     /*
+     public static Map.Entry _class(String name, Map<String, Function> function, Map<String, Function> staticFunctions, Map variables, Map staticVariables) {
+          return LineParser.entry(name, new ClassConstructor(name, function, staticFunctions, variables, staticVariables));
+     }
+     */
+
      public static String[] get(String line, String[] words) throws SyntaxException {
-          line = LineParser.rWord(line, words, 0);
-          return LineParser.getInsideBrackets(line).split(",");
+          return LineParser.split(LineParser.getInsideBrackets(line), ',');
      }
 
      public static float parseNum(LineParser self, String value) throws SyntaxException {

@@ -19,6 +19,78 @@ public class FileModule extends PixieModule {
           values = LineParser.ofEntries(
                   LineParser.entry("file", FileValue.class)
           );
+          //TODO: Class support
+          /*
+          classes = LineParser.ofEntries(
+                  _class("File",
+                          LineParser.ofEntries(
+                                  function("name", 0,
+                                          (String line, String[] words, LineParser p) -> {
+                                               try {
+                                                    return new TextValue(parseFile(p, "this.value").getName());
+                                               } catch (SyntaxException e) {
+                                                    new SyntaxException(e.getMessage()).printStackTrace();
+                                               }
+                                               return null;
+                                          }
+                                  ),
+                                  function("path", 0,
+                                          (String line, String[] words, LineParser p) -> {
+                                               try {
+                                                    return new TextValue(parseFile(p, "this.value").getPath());
+                                               } catch (SyntaxException e) {
+                                                    new SyntaxException(e.getMessage()).printStackTrace();
+                                               }
+                                               return null;
+                                          }
+                                  ),
+                                  function("read", 0,
+                                          (String line, String[] words, LineParser p) -> {
+                                               try {
+                                                    final StringBuilder result = new StringBuilder();
+                                                    BufferedReader br = new BufferedReader(new FileReader(parseFile(p, "this.value")));
+
+                                                    br.lines().forEach(s -> result.append(s).append('\n'));
+
+                                                    return new TextValue(result.toString());
+                                               } catch (SyntaxException | FileNotFoundException e) {
+                                                    new SyntaxException(e.getMessage()).printStackTrace();
+                                               }
+                                               return null;
+                                          }
+                                  )
+                          ),
+                          LineParser.ofEntries(
+                                  function("@__constructor__", 1,
+                                          (String line, String[] words, LineParser p) -> {
+                                               try {
+                                                    String[] inside = get(line, words);
+                                                    p.variables.put("value", new FileValue(new File(parseText(p, inside[0]))));
+                                               } catch (SyntaxException e) {
+                                                    new SyntaxException(e.getMessage()).printStackTrace();
+                                               }
+                                               return null;
+                                          }
+                                  ),
+                                  function("get", 1,
+                                          (String line, String[] words, LineParser p) -> {
+                                               try {
+                                                    String[] inside = get(line, words);
+                                                    return new FileValue(new File(parseText(p, inside[0])));
+                                               } catch (SyntaxException e) {
+                                                    new SyntaxException(e.getMessage()).printStackTrace();
+                                               }
+                                               return null;
+                                          }
+                                  )
+                          ),
+                          LineParser.ofEntries(
+                          ),
+                          LineParser.ofEntries(
+                          )
+                  )
+          );
+          */
           functions = LineParser.ofEntries(
                   function("get_file", 1,
                           (String line, String[] words, LineParser p) -> {

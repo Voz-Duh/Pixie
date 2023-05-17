@@ -20,7 +20,7 @@ public class Pixie {
      }
 
      public static void executeCode(String code) throws Exception {
-          parser = new LineParser(code, 0);
+          parser = new LineParser(code);
           parser.parse();
      }
 
@@ -36,7 +36,7 @@ public class Pixie {
 
           br.lines().forEach(s -> result += s.equals("") ? "" : s + "\n");
 
-          parser = new LineParser(result, 0);
+          parser = new LineParser(result);
           parser.parse();
      }
 

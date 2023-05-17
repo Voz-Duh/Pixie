@@ -6,8 +6,6 @@ import pixie.parser.SyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static pixie.parser.values.NullValue.*;
-
 public class InstanceValue implements Operable<Map<String, Operable>>, VariableContainer {
      public Map<String, Operable> variables = new HashMap<>();
      public Map<String, Function> functions = new HashMap<>();
@@ -125,7 +123,7 @@ public class InstanceValue implements Operable<Map<String, Operable>>, VariableC
      }
 
      public Operable parse(Function function, Operable... values) throws SyntaxException {
-          LineParser parser = new LineParser(function.code.code, 0, null);
+          LineParser parser = new LineParser(function.code.code, null);
 
           int val = 0;
           for (Operable i : values) {
@@ -138,7 +136,7 @@ public class InstanceValue implements Operable<Map<String, Operable>>, VariableC
      }
 
      public Operable parse(LineParser self, Function function, String[] inside) throws SyntaxException {
-          LineParser parser = new LineParser(function.code.code, currentClass.line, this);
+          LineParser parser = new LineParser(function.code.code, this);
 
           parser.classes.putAll(self.classes);
 
