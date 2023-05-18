@@ -30,7 +30,7 @@ or
 Pixie.executeResource(<path_to_your_pixie_file_inside_resources>, CurrentClass.class)
 ``
 
-### Syntex
+### Syntax
 <details><summary>Example code</summary>
 <p>
 
